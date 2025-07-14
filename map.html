@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>แผนที่เยี่ยมบ้านนักเรียน - สารสนเทศเยี่ยมบ้านนักเรียน</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Prompt&family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" integrity="sha512-1sCRPdkRXhBV2PBLUdRb4tMg1w2YPf37qatUFeS7zlBy7jJI8Lf4VHwWfZZfpXtYSLy85pkm9GaYVYMfw5BC1A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <link rel="icon" href="https://raw.githubusercontent.com/infobwd/STUDENT-CARE/main/icons8-information-96.png" type="image/x-icon">
+    <link rel="stylesheet" href="map-styles.css">
+    <link rel="stylesheet" href="features/route-planning.css">
+    <link rel="stylesheet" href="features/route-share.css">
+
+    <script src="https://cdn.lordicon.com/lordicon.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.7.13/lottie.min.js"></script>
+</head>
+<body>
+<!-- Nav Section -->
+<nav class="navbar navbar-expand-lg navbar-custom">
+    <div class="container">
+        <a class="navbar-brand" href="https://student-carewd.glitch.me/">
+            <img src="https://raw.githubusercontent.com/infobwd/STUDENT-CARE/main/icons8-information-96.png" alt="Logo" width="30" height="30" class="d-inline-block align-top"> สารสนเทศเยี่ยมบ้านนักเรียน
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        เมนู
+                    </a>
+                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownMenuLink">
+                            <li><a class="dropdown-item" href="index.html"><i class="fas fa-house-user"></i> ข้อมูลเยี่ยมบ้าน และ สถานะครอบครัว</a></li>
+                            <li><a class="dropdown-item" href="residence.html"><i class="fas fa-home"></i> ข้อมูลการอยู่อาศัย</a></li>
+                            <li><a class="dropdown-item" href="floorMaterial.html"><i class="fas fa-hammer"></i> วัสดุที่ใช้ทำบ้าน</a></li>
+                            <li><a class="dropdown-item" href="electricity.html"><i class="fas fa-lightbulb"></i> แหล่งน้ำดื่ม|แหล่งไฟฟ้า</a></li>
+                            <li><a class="dropdown-item" href="land.html"><i class="fas fa-tractor"></i> ที่ดินทำการเกษตร และ ยานพาหนะ</a></li>
+                            <li><a class="dropdown-item" href="occupations.html"><i class="fas fa-briefcase"></i> อาชีพผู้ปกครองและรายได้</a></li>
+                            <li><a class="dropdown-item" href="map.html"><i class="fas fa-map-marked-alt"></i> แผนที่เยี่ยมบ้าน</a></li>
+                    </ul>
+                </li>
+            </ul>
+            <form class="d-flex flex-fill" role="search" action="search.html" method="get">
+                <input class="form-control me-2" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="ค้นหาโดยรหัสนักเรียน" aria-label="Search" id="studentIdSearch" name="studentId">
+                <button class="btn btn-outline-light me-2" type="submit">ค้นหา</button>
+            </form>
+            <button id="fullscreenButton" class="btn btn-outline-light me-2">ขยายเต็มจอ</button>
+            <button id="fontSizeButton" class="btn btn-outline-light me-2">ก</button>
+            <button id="login-button" class="btn btn-primary"><i class="fab fa-line"></i> LINE Login</button>
+        </div>
+    </div>
+</nav>
+
+<br>
+<div id="content-section" class="container mt-5" style="margin-top: 70px;">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
+        <div class="text-start order-2 order-md-1">
+            <span id="currentDateTime" class="currentDateTime"></span>
+        </div>
+        <div class="text-end order-1 order-md-2">
+            <img id="profile-picture" src="" alt="Profile Picture" class="rounded-circle" width="50" height="50" style="display: none;">
+            <span id="profile-name" class="ms-2"></span>
+            <button id="logout-button" class="btn btn-secondary ms-2" style="display: none;">Logout</button>
+            <button id="share-button" class="btn btn-success ms-2" style="display: none;"><i class="fab fa-line"></i> Share</button>
+        </div>
+    </div>
+
+    <h2><i class="fas fa-map-marked-alt"></i> แผนที่เยี่ยมบ้านนักเรียน</h2>
+    
+    <!-- Semester Selector -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <label for="semesterDropdown" class="form-label">เลือกภาคเรียนที่:</label>
+            <select id="semesterDropdown" class="form-control"></select>
+        </div>
+        <div class="col-md-6">
+            <label for="classFilter" class="form-label">กรองตามห้องเรียน:</label>
+            <select id="classFilter" class="form-control">
+                <option value="">ทุกห้องเรียน</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="stats-box" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%);">
+                <h3 id="visitedCount">0</h3>
+                <p>เยี่ยมแล้ว</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-box" style="background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%);">
+                <h3 id="notVisitedCount">0</h3>
+                <p>ยังไม่เยี่ยม</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-box" style="background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);">
+                <h3 id="totalStudents">0</h3>
+                <p>นักเรียนทั้งหมด</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-box" style="background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);">
+                <h3 id="visitPercentage">0%</h3>
+                <p>เปอร์เซ็นต์เยี่ยม</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activities and Advanced Filters -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="info-panel">
+                <h5><i class="fas fa-clock text-primary"></i> กิจกรรมล่าสุด</h5>
+                <div id="recentActivities" class="recent-activities">
+                    <div class="text-center">
+                        <div class="spinner-border spinner-border-sm" role="status"></div>
+                        <small class="ms-2">กำลังโหลด...</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="info-panel">
+                <h5><i class="fas fa-filter text-success"></i> ตัวกรองขั้นสูง</h5>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <label class="form-label">สถานะการเยี่ยม</label>
+                        <select id="visitStatusFilter" class="form-select form-select-sm">
+                            <option value="">ทั้งหมด</option>
+                            <option value="เยี่ยมแล้ว">เยี่ยมแล้ว</option>
+                            <option value="ยังไม่เยี่ยม">ยังไม่เยี่ยม</option>
+                        </select>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">รายได้ต่ำกว่า</label>
+                        <select id="incomeFilter" class="form-select form-select-sm">
+                            <option value="">ทั้งหมด</option>
+                            <option value="5000">5,000 บาท</option>
+                            <option value="10000">10,000 บาท</option>
+                            <option value="15000">15,000 บาท</option>
+                            <option value="20000">20,000 บาท</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row g-2 mt-1">
+                    <div class="col-6">
+                        <label class="form-label">ได้สวัสดิการ</label>
+                        <select id="welfareFilter" class="form-select form-select-sm">
+                            <option value="">ทั้งหมด</option>
+                            <option value="TRUE">ได้รับ</option>
+                            <option value="FALSE">ไม่ได้รับ</option>
+                        </select>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label">ระยะห่างจากโรงเรียน</label>
+                        <select id="distanceFilter" class="form-select form-select-sm">
+                            <option value="">ทั้งหมด</option>
+                            <option value="1">ใกล้กว่า 1 กม.</option>
+                            <option value="3">ใกล้กว่า 3 กม.</option>
+                            <option value="5">ใกล้กว่า 5 กม.</option>
+                        </select>
+                    </div>
+                </div>
+                <button id="clearFilters" class="btn btn-outline-secondary btn-sm mt-2 w-100">
+                    <i class="fas fa-times"></i> ล้างตัวกรอง
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="info-panel">
+                <h5><i class="fas fa-chart-bar text-warning"></i> สถิติเพิ่มเติม</h5>
+                <div class="row g-3">
+                    <div class="col-md-2 col-6">
+                        <div class="text-center">
+                            <div class="h4 text-primary mb-1" id="todayVisits">0</div>
+                            <small class="text-muted">เยี่ยมวันนี้</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6">
+                        <div class="text-center">
+                            <div class="h4 text-success mb-1" id="thisWeekVisits">0</div>
+                            <small class="text-muted">เยี่ยมสัปดาห์นี้</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6">
+                        <div class="text-center">
+                            <div class="h4 text-info mb-1" id="avgIncome">0</div>
+                            <small class="text-muted">รายได้เฉลี่ย</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6">
+                        <div class="text-center">
+                            <div class="h4 text-warning mb-1" id="welfareCount">0</div>
+                            <small class="text-muted">ได้สวัสดิการ</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6">
+                        <div class="text-center">
+                            <div class="h4 text-danger mb-1" id="urgentCases">0</div>
+                            <small class="text-muted">ต้องเร่งดู</small>
+                        </div>
+                    </div>
+                    <div class="col-md-2 col-6">
+                        <div class="text-center">
+                            <div class="h4 text-secondary mb-1" id="avgDistance">0</div>
+                            <small class="text-muted">ระยะเฉลี่ย (กม.)</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Map Controls -->
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <div class="btn-group" role="group">
+                <button id="showAllBtn" class="btn btn-outline-primary btn-sm active">
+                    <i class="fas fa-eye"></i> แสดงทั้งหมด
+                </button>
+                <button id="showVisitedBtn" class="btn btn-outline-success btn-sm">
+                    <i class="fas fa-check"></i> เยี่ยมแล้ว
+                </button>
+                <button id="showNotVisitedBtn" class="btn btn-outline-danger btn-sm">
+                    <i class="fas fa-times"></i> ยังไม่เยี่ยม
+                </button>
+                <button id="showNearSchoolBtn" class="btn btn-outline-info btn-sm">
+                    <i class="fas fa-school"></i> ใกล้โรงเรียน
+                </button>
+                <button id="centerMapBtn" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-crosshairs"></i> กลับจุดเริ่มต้น
+                </button>
+            </div>
+            <div class="btn-group ms-2" role="group">
+                <button id="heatmapToggle" class="btn btn-outline-warning btn-sm">
+                    <i class="fas fa-fire"></i> Heat Map
+                </button>
+                <button id="clusterToggle" class="btn btn-outline-purple btn-sm">
+                    <i class="fas fa-layer-group"></i> Cluster
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Map and Enhanced Legend -->
+    <div class="row">
+        <div class="col-md-9">
+            <div class="info-panel">
+                <div id="loading" class="loading">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">กำลังโหลด...</span>
+                    </div>
+                    <p class="mt-2">กำลังโหลดข้อมูลแผนที่...</p>
+                </div>
+                <div id="mapid" style="display: none;"></div>
+                <!-- Map Info Overlay -->
+                <div id="mapInfo" class="position-absolute" style="top: 10px; left: 10px; background: rgba(255,255,255,0.9); padding: 10px; border-radius: 5px; font-size: 12px; display: none;">
+                    <div><strong>พิกัดเมาส์:</strong> <span id="mouseCoords">-</span></div>
+                    <div><strong>ระดับซูม:</strong> <span id="zoomLevel">13</span></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <!-- Enhanced Legend -->
+            <div class="legend mb-3">
+                <h5><i class="fas fa-info-circle"></i> คำอธิบาย</h5>
+                <div class="legend-item">
+                    <div class="legend-icon visited"></div>
+                    <span>เยี่ยมบ้านแล้ว</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-icon not-visited"></div>
+                    <span>ยังไม่เยี่ยมบ้าน</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-icon school"></div>
+                    <span>โรงเรียน</span>
+                </div>
+                <div class="legend-item">
+                    <div style="width: 20px; height: 20px; border-radius: 50%; background: linear-gradient(45deg, #28a745, #dc3545); margin-right: 10px;"></div>
+                    <span>รายได้ต่ำ + ยังไม่เยี่ยม</span>
+                </div>
+                <hr>
+                <h6><i class="fas fa-mouse-pointer"></i> การใช้งาน</h6>
+                <small class="text-muted">
+                    • คลิกที่หมุดเพื่อดูรายละเอียด<br>
+                    • ใช้เมาส์ลากเพื่อเลื่อนแผนที่<br>
+                    • ใช้ล้อเมาส์เพื่อซูมเข้า-ออก<br>
+                    • ดับเบิลคลิกเพื่อซูมเข้าเร็ว
+                </small>
+            </div>
+
+            <!-- Priority Cases -->
+          <div class="legend">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h5 class="mb-0"><i class="fas fa-exclamation-triangle text-danger"></i> ลำดับความสำคัญ</h5>
+                  <button class="btn btn-sm btn-outline-primary" onclick="showPriorityCasesModal()">
+                      <i class="fas fa-expand"></i> ดูทั้งหมด
+                  </button>
+              </div>
+              <div id="priorityCases" class="priority-cases">
+                    <div class="text-center">
+                        <div class="spinner-border spinner-border-sm" role="status"></div>
+                        <small class="ms-2">กำลังโหลด...</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weather Info -->
+            <div class="legend mt-3">
+                <h5><i class="fas fa-cloud-sun text-info"></i> สภาพอากาศ</h5>
+                <div id="weatherInfo" class="text-center">
+                    <small class="text-muted">เหมาะสำหรับการเยี่ยมบ้าน</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Priority Cases Modal -->
+<div class="modal fade" id="priorityCasesModal" tabindex="-1" aria-labelledby="priorityCasesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="priorityCasesModalLabel">
+                    <i class="fas fa-exclamation-triangle"></i> รายการนักเรียนตามลำดับความสำคัญ
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Filters -->
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <label class="form-label">ค้นหาชื่อนักเรียน:</label>
+                        <input type="text" id="prioritySearch" class="form-control" placeholder="พิมพ์ชื่อหรือนามสกุล...">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">ระดับความสำคัญ:</label>
+                        <select id="priorityLevelFilter" class="form-select">
+                            <option value="">ทุกระดับ</option>
+                            <option value="high">สูง (≥6)</option>
+                            <option value="medium">กลาง (4-5)</option>
+                            <option value="low">ต่ำ (1-3)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">ห้องเรียน:</label>
+                        <select id="priorityClassFilter" class="form-select">
+                            <option value="">ทุกห้อง</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">สถานะการเยี่ยม:</label>
+                        <select id="priorityVisitFilter" class="form-select">
+                            <option value="">ทั้งหมด</option>
+                            <option value="notVisited">ยังไม่เยี่ยม</option>
+                            <option value="visited">เยี่ยมแล้ว</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">การดำเนินการ:</label>
+                        <div class="btn-group w-100" role="group">
+                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearPriorityFilters()">
+                                <i class="fas fa-times"></i> ล้าง
+                            </button>
+                            <button type="button" class="btn btn-outline-success btn-sm" onclick="exportPriorityList()">
+                                <i class="fas fa-download"></i> ส่งออก
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Summary Stats -->
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <div class="alert alert-info d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>สรุปข้อมูล:</strong> 
+                                <span id="priorityTotalCount">0</span> เคสทั้งหมด | 
+                                <span class="text-danger">ความสำคัญสูง: <span id="priorityHighCount">0</span></span> | 
+                                <span class="text-warning">กลาง: <span id="priorityMediumCount">0</span></span> | 
+                                <span class="text-success">ต่ำ: <span id="priorityLowCount">0</span></span>
+                            </div>
+                            <div>
+                                <small>แสดง <span id="priorityDisplayCount">0</span> รายการ</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Loading -->
+                <div id="priorityModalLoading" class="text-center py-4" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">กำลังโหลด...</span>
+                    </div>
+                    <p class="mt-2">กำลังโหลดข้อมูล...</p>
+                </div>
+
+                <!-- Table -->
+                <div id="priorityTableContainer" class="table-responsive">
+                    <table class="table table-hover table-sm">
+                        <thead class="table-dark sticky-top">
+                            <tr>
+                                <th style="width: 60px;">ลำดับ</th>
+                                <th style="width: 200px;">ชื่อ-นามสกุล</th>
+                                <th style="width: 80px;">ห้อง</th>
+                                <th style="width: 80px;">สถานะ</th>
+                                <th>สาเหตุความสำคัญ</th>
+                                <th style="width: 80px;">คะแนน</th>
+                                <th style="width: 100px;">รายได้</th>
+                                <th style="width: 120px;">การดำเนินการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="priorityTableBody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Empty State -->
+                <div id="priorityEmptyState" class="text-center py-5" style="display: none;">
+                    <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">ไม่พบข้อมูลตามเงื่อนไขที่ค้นหา</h5>
+                    <p class="text-muted">ลองปรับเปลี่ยนเงื่อนไขการค้นหาหรือกรอง</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <div class="d-flex justify-content-between w-100">
+                    <div>
+                        <small class="text-muted">
+                            อัปเดตล่าสุด: <span id="priorityLastUpdate"></span>
+                        </small>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times"></i> ปิด
+                        </button>
+                        <button type="button" class="btn btn-primary" onclick="refreshPriorityData()">
+                            <i class="fas fa-sync-alt"></i> รีเฟรช
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+  <br>
+<!-- Footer Section -->
+<div id="footer-container"></div>
+
+<!-- Chat Button -->
+<button onclick="chatFunction()" id="chatBtn" title="Chat with us"><i class="fa fa-comments"></i></button>
+
+<!-- Scripts -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script src="map.js"></script>
+<script src="features/route-planning-google.js"></script>
+  <script src="features/route-share.js"></script>
+
+</body>
+</html>
