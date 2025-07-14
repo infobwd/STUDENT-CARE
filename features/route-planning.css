@@ -1,0 +1,374 @@
+/* features/route-planning.css */
+/* สไตล์สำหรับฟีเจอร์ Route Planning */
+
+/* Route Planning Modal */
+#routePlanningModal .modal-dialog {
+    max-width: 90vw;
+}
+
+#routePlanningModal .modal-body {
+    padding: 1.5rem;
+}
+
+/* Student Selection List */
+.student-item {
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.student-item:hover {
+    background-color: #f8f9fa !important;
+    border-color: #007bff !important;
+}
+
+.student-item input[type="checkbox"]:checked + label {
+    background-color: #e3f2fd;
+}
+
+.student-checkbox {
+    transform: scale(1.1);
+}
+
+/* Route List Items */
+.route-stop-item {
+    transition: all 0.2s ease;
+}
+
+.route-stop-item:hover {
+    background-color: #f8f9fa;
+    transform: translateX(5px);
+}
+
+/* Route Markers on Map */
+.route-marker {
+    z-index: 1000;
+}
+
+.route-marker div {
+    animation: routeMarkerPulse 2s infinite;
+}
+
+@keyframes routeMarkerPulse {
+    0% {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+    50% {
+        box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        transform: scale(1.05);
+    }
+    100% {
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    }
+}
+
+/* Route Line Animation */
+.leaflet-interactive {
+    animation: routeLineDash 20s linear infinite;
+}
+
+@keyframes routeLineDash {
+    from {
+        stroke-dashoffset: 0;
+    }
+    to {
+        stroke-dashoffset: 100;
+    }
+}
+
+/* Summary Cards */
+.route-summary-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.route-summary-item {
+    transition: all 0.2s ease;
+}
+
+.route-summary-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Control Buttons */
+.route-control-btn {
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.route-control-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+}
+
+.route-control-btn:active {
+    transform: translateY(0);
+}
+
+/* Loading States */
+.route-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.route-loading .spinner-border {
+    width: 2rem;
+    height: 2rem;
+    color: #28a745;
+}
+
+/* Progress Bar */
+.route-progress {
+    height: 6px;
+    background-color: #e9ecef;
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.route-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+    transition: width 0.3s ease;
+}
+
+/* Toast Notifications */
+.route-toast {
+    min-width: 300px;
+}
+
+.route-toast .toast-header {
+    border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+/* Time Inputs */
+input[type="time"] {
+    padding: 0.375rem 0.75rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+input[type="time"]:focus {
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Number Inputs */
+input[type="number"] {
+    padding: 0.375rem 0.75rem;
+    border: 1px solid #ced4da;
+    border-radius: 0.375rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+input[type="number"]:focus {
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+/* Select Dropdowns */
+.route-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m1 6 7 7 7-7'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 16px 12px;
+}
+
+/* Badge Styles */
+.route-badge {
+    font-size: 0.75em;
+    padding: 0.35em 0.65em;
+    border-radius: 0.375rem;
+}
+
+.route-badge-success {
+    background-color: #28a745;
+    color: white;
+}
+
+.route-badge-warning {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.route-badge-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Scrollbar Styling */
+.route-scroll::-webkit-scrollbar {
+    width: 8px;
+}
+
+.route-scroll::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.route-scroll::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.route-scroll::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    #routePlanningModal .modal-dialog {
+        max-width: 95vw;
+        margin: 10px;
+    }
+    
+    #routePlanningModal .modal-body {
+        padding: 1rem;
+    }
+    
+    .route-control-buttons {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .route-control-btn {
+        width: 100%;
+    }
+    
+    .student-item {
+        font-size: 0.9rem;
+    }
+    
+    .route-summary-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .route-summary-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .route-modal-header {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .route-modal-title {
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* Print Styles */
+@media print {
+    #routePlanningModal {
+        display: none !important;
+    }
+    
+    .route-no-print {
+        display: none !important;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .route-summary-card {
+        background: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+        color: white;
+    }
+    
+    .student-item {
+        background-color: #2d3748;
+        border-color: #4a5568;
+        color: white;
+    }
+    
+    .student-item:hover {
+        background-color: #4a5568 !important;
+        border-color: #63b3ed !important;
+    }
+    
+    input[type="time"],
+    input[type="number"],
+    select {
+        background-color: #2d3748;
+        border-color: #4a5568;
+        color: white;
+    }
+    
+    input[type="time"]:focus,
+    input[type="number"]:focus,
+    select:focus {
+        background-color: #2d3748;
+        border-color: #63b3ed;
+        box-shadow: 0 0 0 0.25rem rgba(99, 179, 237, 0.25);
+    }
+}
+
+/* Animation Classes */
+.route-fade-in {
+    animation: routeFadeIn 0.3s ease-in-out;
+}
+
+@keyframes routeFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.route-slide-in {
+    animation: routeSlideIn 0.4s ease-out;
+}
+
+@keyframes routeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Success Animation */
+.route-success {
+    animation: routeSuccess 0.6s ease-in-out;
+}
+
+@keyframes routeSuccess {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Error State */
+.route-error {
+    border-color: #dc3545 !important;
+    background-color: #f8d7da !important;
+}
+
+.route-error-message {
+    color: #721c24;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}

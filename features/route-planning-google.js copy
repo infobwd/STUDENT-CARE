@@ -1,0 +1,2255 @@
+// features/route-planning-google.js
+// ฟีเจอร์วางแผนเส้นทางพร้อม Google Maps Integration
+
+const RoutePlanningGoogle = {
+    isInitialized: false,
+    optimizedRoute: [],
+    
+    // เริ่มต้นฟีเจอร์
+    init() {
+        if (this.isInitialized) return;
+        console.log('🚗 Initializing Route Planning with Google Maps...');
+        
+        // รอให้ระบบหลักโหลดเสร็จก่อน
+        if (typeof map === 'undefined' || typeof homeVisitData === 'undefined') {
+            setTimeout(() => this.init(), 1000);
+            return;
+        }
+        
+        this.createRouteButton();
+        this.isInitialized = true;
+        console.log('✅ Route Planning with Google Maps loaded successfully');
+    },
+    
+    // เพิ่มปุ่มวางแผนเส้นทาง
+    createRouteButton() {
+    const controlBar = document.querySelector('.btn-group');
+    if (!controlBar) return;
+    
+    // ตรวจสอบว่ามีปุ่มอยู่แล้วหรือไม่
+    const existingBtn = document.getElementById('routePlanningGoogleBtn');
+    if (existingBtn) {
+        existingBtn.remove(); // ลบปุ่มเก่าออก
+    }
+    
+    const routeBtn = document.createElement('button');
+    routeBtn.id = 'routePlanningGoogleBtn';
+    routeBtn.className = 'btn btn-outline-success btn-sm';
+    routeBtn.innerHTML = '<i class="fab fa-google"></i> Google เส้นทาง';
+    routeBtn.onclick = () => this.showRoutePlanningModal();
+    
+    // เพิ่มหลังปุ่ม "กลับจุดเริ่มต้น"
+    const centerBtn = document.getElementById('centerMapBtn');
+    if (centerBtn) {
+        // แทรกหลัง centerBtn
+        centerBtn.parentNode.insertBefore(routeBtn, centerBtn.nextSibling);
+    } else {
+        // ถ้าไม่มี centerBtn ให้เพิ่มที่ท้าย
+        controlBar.appendChild(routeBtn);
+    }
+    
+    console.log('✅ Route button created successfully');
+},
+    
+  clearSelection() {
+    console.log('🗑️ Clearing all selections...');
+    
+    // ยกเลิกการเลือกทั้งหมด
+    const allCheckboxes = document.querySelectorAll('.google-student-checkbox');
+    allCheckboxes.forEach(checkbox => {
+        checkbox.checked = false;
+    });
+    
+    // รีเซ็ต dropdown เป็นค่าเริ่มต้น
+    const routeTypeEl = document.getElementById('googleRouteType');
+    if (routeTypeEl) {
+        routeTypeEl.value = 'custom'; // เปลี่ยนเป็น custom เพื่อไม่ให้เลือกอัตโนมัติ
+    }
+    
+    // อัปเดต summary
+    this.updateRouteSummary();
+    
+    // แสดงข้อความแจ้งเตือน
+    this.showToast('ล้างการเลือกทั้งหมดแล้ว', 'info');
+    
+    console.log('✅ All selections cleared');
+},
+  
+    // แสดง Modal วางแผนเส้นทาง
+    showRoutePlanningModal() {
+        this.removeExistingModal();
+        this.createRoutePlanningModal();
+        this.populateStudentList();
+        
+        const modal = new bootstrap.Modal(document.getElementById('routePlanningGoogleModal'));
+        modal.show();
+    },
+    
+    // ลบ Modal เดิม (ถ้ามี)
+    removeExistingModal() {
+        const existingModal = document.getElementById('routePlanningGoogleModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+    },
+    
+    // สร้าง Modal
+   createRoutePlanningModal() {
+    const modalHTML = `
+        <div class="modal fade" id="routePlanningGoogleModal" tabindex="-1" aria-labelledby="routePlanningGoogleModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-xl">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title" id="routePlanningGoogleModalLabel">
+                            <i class="fab fa-google"></i> วางแผนเส้นทางด้วย Google Maps
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <!-- คำแนะนำ -->
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>คำแนะนำ:</strong> เลือกนักเรียนที่ต้องการเยี่ยม แล้วคลิก "เปิด Google Maps" 
+                            ระบบจะสร้างเส้นทางและเปิดใน Google Maps พร้อม turn-by-turn navigation
+                        </div>
+
+                        <!-- Real-time Summary Bar -->
+                        <div id="googleRouteSummary" class="alert alert-light border" style="display: none;">
+                            <div class="row text-center">
+                                <div class="col-3">
+                                    <div class="d-flex align-items-center justify-content-center">
+                                        <i class="fas fa-home text-primary me-2"></i>
+                                        <div>
+                                            <div class="h4 text-primary mb-0" id="selectedCount">0</div>
+                                            <small class="text-muted">ครัวเรือน</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="d-flex align-items-center justify-content-center">
+                                        <i class="fas fa-route text-success me-2"></i>
+                                        <div>
+                                            <div class="h4 text-success mb-0" id="estimatedDistance">0</div>
+                                            <small class="text-muted">กิโลเมตร</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="d-flex align-items-center justify-content-center">
+                                        <i class="fas fa-clock text-info me-2"></i>
+                                        <div>
+                                            <div class="h4 text-info mb-0" id="estimatedTime">0</div>
+                                            <small class="text-muted">นาที</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-3">
+                                    <div class="d-flex align-items-center justify-content-center">
+                                        <i class="fas fa-car text-warning me-2"></i>
+                                        <div>
+                                            <div class="h5 text-warning mb-0" id="travelModeDisplay">🚗</div>
+                                            <small class="text-muted">การเดินทาง</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="progress mt-2" style="height: 8px;">
+                                <div class="progress-bar bg-success" role="progressbar" id="selectionProgress" style="width: 0%"></div>
+                            </div>
+                            <div class="text-center mt-2">
+                                <small class="text-muted" id="summaryStatus">เลือกนักเรียนเพื่อเริ่มวางแผนเส้นทาง</small>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- ส่วนควบคุม -->
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="fas fa-cogs"></i> ตั้งค่าการเยี่ยม</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <!-- เลือกประเภทการเยี่ยม -->
+                                        <div class="mb-3">
+                                            <label class="form-label">ประเภทการเยี่ยม:</label>
+                                            <select id="googleRouteType" class="form-select form-select-sm">
+                                                <option value="notVisited">ยังไม่เยี่ยม (แนะนำ)</option>
+                                                <option value="priority">ความสำคัญสูง</option>
+                                                <option value="nearSchool">ใกล้โรงเรียน</option>
+                                                <option value="all">ทุกเคส</option>
+                                                <option value="custom">เลือกเอง</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <!-- จำนวนการเยี่ยมสูงสุด -->
+                                        <div class="mb-3">
+                                            <label class="form-label">เยี่ยมสูงสุด:</label>
+                                            <select id="googleMaxVisits" class="form-select form-select-sm">
+                                                <option value="5">5 ครัวเรือน</option>
+                                                <option value="10" selected>10 ครัวเรือน</option>
+                                                <option value="15">15 ครัวเรือน</option>
+                                                <option value="20">20 ครัวเรือน</option>
+                                                <option value="25">25 ครัวเรือน</option>
+                                            </select>
+                                            <small class="text-muted">Google Maps รองรับสูงสุด 25 จุด</small>
+                                        </div>
+                                        
+                                        <!-- ประเภทการเดินทาง -->
+                                        <div class="mb-3">
+                                            <label class="form-label">ประเภทการเดินทาง:</label>
+                                            <select id="googleTravelMode" class="form-select form-select-sm">
+                                                <option value="driving">🚗 ขับรถ</option>
+                                                <option value="walking">🚶 เดินเท้า</option>
+                                                <option value="bicycling">🚴 จักรยาน</option>
+                                                <option value="transit">🚌 ขนส่งสาธารณะ</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <!-- เรียงลำดับตาม -->
+                                        <div class="mb-3">
+                                            <label class="form-label">เรียงลำดับตาม:</label>
+                                            <select id="googleSortBy" class="form-select form-select-sm">
+                                                <option value="distance">ระยะทางใกล้สุด</option>
+                                                <option value="priority">ความสำคัญ</option>
+                                                <option value="class">ห้องเรียน</option>
+                                                <option value="name">ชื่อ A-Z</option>
+                                            </select>
+                                        </div>
+                                        
+                                        <!-- ปุ่มควบคุม -->
+                                        <div class="d-grid gap-2">
+                                            <button type="button" class="btn btn-primary btn-sm" onclick="RoutePlanningGoogle.generateGoogleRoute()" id="generateRouteBtn" disabled>
+                                                <i class="fab fa-google"></i> เปิด Google Maps
+                                            </button>
+                                            <button type="button" class="btn btn-outline-info btn-sm" onclick="RoutePlanningGoogle.previewRoute()" id="previewRouteBtn" disabled>
+                                                <i class="fas fa-eye"></i> ดูตัวอย่างเส้นทาง
+                                            </button>
+                                            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="RoutePlanningGoogle.clearSelection()">
+                                                <i class="fas fa-trash"></i> ล้างการเลือก
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Quick Actions -->
+                                <div class="card mt-3">
+                                    <div class="card-header">
+                                        <h6 class="mb-0"><i class="fas fa-bolt"></i> การกระทำด่วน</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="d-grid gap-2">
+                                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="RoutePlanningGoogle.quickRoute('urgent')">
+                                                <i class="fas fa-exclamation-triangle"></i> เคสเร่งด่วน (5 คน)
+                                            </button>
+                                            <button type="button" class="btn btn-outline-warning btn-sm" onclick="RoutePlanningGoogle.quickRoute('nearby')">
+                                                <i class="fas fa-map-marker-alt"></i> ใกล้โรงเรียน (10 คน)
+                                            </button>
+                                            <button type="button" class="btn btn-outline-success btn-sm" onclick="RoutePlanningGoogle.quickRoute('notVisited')">
+                                                <i class="fas fa-list-check"></i> ยังไม่เยี่ยม (15 คน)
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- รายการนักเรียน -->
+                            <div class="col-md-8">
+                                <div class="card">
+                                    <div class="card-header d-flex justify-content-between align-items-center">
+                                        <h6 class="mb-0"><i class="fas fa-list"></i> รายการนักเรียน</h6>
+                                        <div class="d-flex align-items-center">
+                                            <span class="badge bg-primary me-2" id="totalStudentCount">0</span>
+                                            <div class="btn-group" role="group">
+                                                <button type="button" class="btn btn-outline-primary btn-sm" onclick="RoutePlanningGoogle.selectAll()">
+                                                    <i class="fas fa-check-square"></i> เลือกทั้งหมด
+                                                </button>
+                                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="RoutePlanningGoogle.unselectAll()">
+                                                    <i class="fas fa-square"></i> ยกเลิกทั้งหมด
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- เพิ่มส่วนค้นหา -->
+                                    <div class="card-body pb-2">
+                                        <div class="input-group input-group-sm mb-3">
+                                            <span class="input-group-text"><i class="fas fa-search"></i></span>
+                                            <input type="text" id="googleStudentSearch" class="form-control" placeholder="ค้นหาชื่อ-นามสกุล, ชื่อเล่น, หรือห้องเรียน...">
+                                            <button class="btn btn-outline-secondary" type="button" onclick="RoutePlanningGoogle.clearSearch()">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="card-body pt-0" style="max-height: 500px; overflow-y: auto;">
+                                        <div id="googleStudentListContainer">
+                                            <div class="text-center">
+                                                <div class="spinner-border spinner-border-sm" role="status"></div>
+                                                <small class="ms-2">กำลังโหลดรายการ...</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="d-flex justify-content-between w-100">
+                            <div>
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle"></i> 
+                                    Google Maps จะเปิดในแท็บใหม่พร้อมเส้นทางที่เหมาะสม
+                                </small>
+                            </div>
+                            <div>
+                                <button type="button" class="btn btn-outline-info" onclick="RoutePlanningGoogle.shareRoute()" id="shareRouteBtn" disabled>
+                                    <i class="fas fa-share"></i> แชร์เส้นทาง
+                                </button>
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                    <i class="fas fa-times"></i> ปิด
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    
+    // ตั้งค่า event listeners พร้อม real-time updates
+    this.setupModalEventListeners();
+},
+    
+  // ตั้งค่า Event Listeners สำหรับ Real-time Updates
+setupModalEventListeners() {
+    // Route Type Change
+    const routeTypeEl = document.getElementById('googleRouteType');
+    if (routeTypeEl) {
+        routeTypeEl.addEventListener('change', () => {
+            this.onRouteTypeChanged();
+            this.updateRouteSummary();
+        });
+    }
+    
+    // Max Visits Change
+    const maxVisitsEl = document.getElementById('googleMaxVisits');
+    if (maxVisitsEl) {
+        maxVisitsEl.addEventListener('change', () => {
+            this.updateRouteSummary();
+            this.validateSelection();
+        });
+    }
+    
+    // Travel Mode Change
+    const travelModeEl = document.getElementById('googleTravelMode');
+    if (travelModeEl) {
+        travelModeEl.addEventListener('change', () => {
+            this.updateTravelModeDisplay();
+            this.updateRouteSummary();
+        });
+    }
+    
+    // Sort By Change
+    const sortByEl = document.getElementById('googleSortBy');
+    if (sortByEl) {
+        sortByEl.addEventListener('change', () => {
+            this.sortStudentList();
+        });
+    }
+    
+    // Search Input
+    const searchEl = document.getElementById('googleStudentSearch');
+    if (searchEl) {
+        searchEl.addEventListener('input', (e) => {
+            this.searchStudents(e.target.value);
+        });
+        
+        // Clear search on escape
+        searchEl.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.clearSearch();
+            }
+        });
+    }
+    
+    // Show summary on modal open
+    const modal = document.getElementById('routePlanningGoogleModal');
+    if (modal) {
+        modal.addEventListener('shown.bs.modal', () => {
+            document.getElementById('googleRouteSummary').style.display = 'block';
+            this.updateRouteSummary();
+        });
+    }
+},
+
+  
+  // อัปเดตการแสดงผลโหมดการเดินทาง
+updateTravelModeDisplay() {
+    const travelModeEl = document.getElementById('googleTravelMode');
+    const displayEl = document.getElementById('travelModeDisplay');
+    
+    if (!travelModeEl || !displayEl) return;
+    
+    const modes = {
+        'driving': '🚗',
+        'walking': '🚶',
+        'bicycling': '🚴',
+        'transit': '🚌'
+    };
+    
+    displayEl.textContent = modes[travelModeEl.value] || '🚗';
+},
+  
+// ตรวจสอบและเปิด/ปิดปุ่ม
+validateSelection() {
+    const selectedCount = this.getSelectedStudentsCount();
+    const maxVisits = parseInt(document.getElementById('googleMaxVisits')?.value) || 25;
+    
+    // Enable/Disable buttons based on selection
+    const generateBtn = document.getElementById('generateRouteBtn');
+    const previewBtn = document.getElementById('previewRouteBtn');
+    const shareBtn = document.getElementById('shareRouteBtn');
+    
+    const isValidSelection = selectedCount > 0 && selectedCount <= maxVisits;
+    
+    if (generateBtn) generateBtn.disabled = !isValidSelection;
+    if (previewBtn) previewBtn.disabled = !isValidSelection;
+    if (shareBtn) shareBtn.disabled = !isValidSelection;
+    
+    return isValidSelection;
+},  
+  
+// นับจำนวนนักเรียนที่เลือก
+getSelectedStudentsCount() {
+    const visibleCheckedBoxes = Array.from(document.querySelectorAll('.google-student-checkbox:checked')).filter(checkbox => {
+        const parentItem = checkbox.closest('.google-student-item');
+        return parentItem && 
+               parentItem.style.display !== 'none' && 
+               parentItem.offsetParent !== null;
+    });
+    return visibleCheckedBoxes.length;
+},  
+    // โหลดรายการนักเรียน
+    populateStudentList() {
+        const container = document.getElementById('googleStudentListContainer');
+        const totalCountEl = document.getElementById('totalStudentCount');
+        
+        if (!container) return;
+        
+        if (!homeVisitData || homeVisitData.length === 0) {
+            container.innerHTML = '<div class="text-muted text-center">ไม่พบข้อมูลนักเรียน</div>';
+            if (totalCountEl) totalCountEl.textContent = '0';
+            return;
+        }
+        
+        // กรองนักเรียนที่มีพิกัด
+        const studentsWithCoords = homeVisitData.filter(student => {
+            return student && student['LatLongHome'] && student['LatLongHome'].includes(',');
+        });
+        
+        if (studentsWithCoords.length === 0) {
+            container.innerHTML = '<div class="text-muted text-center">ไม่พบนักเรียนที่มีพิกัดที่อยู่</div>';
+            if (totalCountEl) totalCountEl.textContent = '0';
+            return;
+        }
+        
+        // อัปเดตจำนวนทั้งหมด
+        if (totalCountEl) {
+            totalCountEl.textContent = studentsWithCoords.length;
+        }
+        
+        this.renderStudentList(studentsWithCoords);
+    },
+    
+    // ฟังก์ชันค้นหานักเรียน
+     searchStudents(searchTerm) {
+        const items = document.querySelectorAll('.google-student-item');
+        const term = searchTerm.toLowerCase().trim();
+        
+        let visibleCount = 0;
+        
+        items.forEach(item => {
+            const index = parseInt(item.dataset.index);
+            if (isNaN(index) || !homeVisitData[index]) {
+                item.style.display = 'none';
+                return;
+            }
+            
+            const student = homeVisitData[index];
+            const name = (student['ชื่อและนามสกุล'] || '').toLowerCase();
+            const nickname = (student['ชื่อเล่น'] || '').toLowerCase();
+            const classroom = (student['ห้องเรียน'] || '').toLowerCase();
+            
+            // ค้นหาในชื่อ, ชื่อเล่น, หรือห้องเรียน
+            const isMatch = term === '' || 
+                           name.includes(term) || 
+                           nickname.includes(term) || 
+                           classroom.includes(term);
+            
+            item.style.display = isMatch ? 'block' : 'none';
+            if (isMatch) visibleCount++;
+        });
+        
+        console.log(`🔍 Search results: ${visibleCount} items visible for term: "${term}"`);
+        
+        // อัปเดตสรุปหลังค้นหา
+        setTimeout(() => this.updateRouteSummary(), 100);
+    },
+    
+    // ล้างการค้นหา
+    clearSearch() {
+        const searchInput = document.getElementById('googleStudentSearch');
+        if (searchInput) {
+            searchInput.value = '';
+            this.searchStudents(''); // แสดงทั้งหมด
+        }
+    },
+    
+    // แสดงรายการนักเรียน
+    renderStudentList(students) {
+        const container = document.getElementById('googleStudentListContainer');
+        
+        const studentListHTML = students.map((student, index) => {
+            const isVisited = student['สถานการณ์เยี่ยม'] === 'เยี่ยมแล้ว';
+            const distance = student.distanceFromSchool ? 
+                `${student.distanceFromSchool.toFixed(1)} กม.` : 'ไม่ทราบ';
+            
+            const statusBadge = isVisited ? 
+                '<span class="badge bg-success">เยี่ยมแล้ว</span>' : 
+                '<span class="badge bg-danger">ยังไม่เยี่ยม</span>';
+            
+            // คำนวณความสำคัญ
+            const priorityScore = this.calculatePriorityScore(student);
+            const priorityBadge = priorityScore >= 6 ? 
+                '<span class="badge bg-warning">สำคัญ</span>' : '';
+            
+            // หา index ใน homeVisitData
+            const originalIndex = homeVisitData.findIndex(s => 
+                s['ชื่อและนามสกุล'] === student['ชื่อและนามสกุล'] && 
+                s['ห้องเรียน'] === student['ห้องเรียน']
+            );
+            
+            return `
+                <div class="form-check border rounded p-2 mb-2 google-student-item" data-index="${originalIndex}" data-priority="${priorityScore}">
+                    <input class="form-check-input google-student-checkbox" type="checkbox" value="${originalIndex}" id="google_student_${originalIndex}" ${!isVisited ? 'checked' : ''}>
+                    <label class="form-check-label w-100" for="google_student_${originalIndex}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>${student['ชื่อและนามสกุล'] || 'ไม่ระบุ'}</strong>
+                                <small class="text-muted d-block">${student['ห้องเรียน'] || ''} • ${distance}</small>
+                            </div>
+                            <div class="text-end">
+                                ${statusBadge}
+                                ${priorityBadge}
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            `;
+        }).join('');
+        
+        container.innerHTML = studentListHTML;
+        
+        // เพิ่ม event listeners ใหม่
+        this.bindCheckboxEvents();
+        
+        // เรียงลำดับและอัปเดตสรุป
+        setTimeout(() => {
+            this.sortStudentList();
+        }, 100);
+    },
+    
+  
+  // ฟังก์ชันแยกสำหรับ bind events
+    bindCheckboxEvents() {
+        // ลบ event listeners เก่า (ถ้ามี)
+        document.querySelectorAll('.google-student-checkbox').forEach(checkbox => {
+            checkbox.removeEventListener('change', this.handleCheckboxChange);
+        });
+        
+        // เพิ่ม event listeners ใหม่
+        document.querySelectorAll('.google-student-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', this.handleCheckboxChange.bind(this));
+        });
+    },
+  
+   // Handle checkbox change event
+    handleCheckboxChange(event) {
+        const checkbox = event.target;
+        console.log(`📝 Checkbox ${checkbox.value} changed to:`, checkbox.checked);
+        
+        // อัปเดตสรุปทันที
+        this.updateRouteSummary();
+    },
+
+    // คำนวณคะแนนความสำคัญ
+    calculatePriorityScore(student) {
+        let priority = 0;
+        
+        // ยังไม่เยี่ยม
+        if (student['สถานการณ์เยี่ยม'] !== 'เยี่ยมแล้ว') priority += 3;
+        
+        // รายได้ต่ำ
+        const income = student['รายได้'] ? parseFloat(student['รายได้'].replace(/[฿,]/g, '')) : 0;
+        if (income > 0 && income < 5000) priority += 3;
+        else if (income >= 5000 && income < 10000) priority += 2;
+        else if (income >= 10000 && income < 15000) priority += 1;
+        
+        // ได้สวัสดิการ
+        if (student['ได้สวัสดิการแห่งรัฐ'] === 'TRUE') priority += 1;
+        
+        // มีภาระพึ่งพิง
+        if (student['ครัวเรือนมีภาระพึ่งพิง']) priority += 1;
+        
+        // ไกลจากโรงเรียน
+        if (student.distanceFromSchool && student.distanceFromSchool > 5) priority += 2;
+        else if (student.distanceFromSchool && student.distanceFromSchool > 3) priority += 1;
+        
+        return priority;
+    },
+    
+    // เมื่อเปลี่ยนประเภทการเยี่ยม
+ onRouteTypeChanged() {
+        const routeTypeEl = document.getElementById('googleRouteType');
+        if (!routeTypeEl) return;
+        
+        const routeType = routeTypeEl.value;
+        console.log('🔄 Route type changed to:', routeType);
+        
+        const checkboxes = document.querySelectorAll('.google-student-checkbox');
+        
+        checkboxes.forEach((checkbox, index) => {
+            const studentIndex = parseInt(checkbox.value);
+            if (isNaN(studentIndex) || !homeVisitData[studentIndex]) return;
+            
+            const student = homeVisitData[studentIndex];
+            let shouldCheck = false;
+            
+            switch (routeType) {
+                case 'all':
+                    shouldCheck = true;
+                    break;
+                case 'notVisited':
+                    shouldCheck = student['สถานการณ์เยี่ยม'] !== 'เยี่ยมแล้ว';
+                    break;
+                case 'priority':
+                    shouldCheck = this.calculatePriorityScore(student) >= 4;
+                    break;
+                case 'nearSchool':
+                    shouldCheck = student.distanceFromSchool && student.distanceFromSchool < 3;
+                    break;
+                case 'custom':
+                    return; // ไม่เปลี่ยนอะไร
+            }
+            
+            checkbox.checked = shouldCheck;
+        });
+        
+        // อัปเดตสรุปหลังเปลี่ยนประเภท
+        setTimeout(() => this.updateRouteSummary(), 100);
+    },
+    
+    // เรียงลำดับรายการนักเรียน
+    sortStudentList() {
+        const sortByEl = document.getElementById('googleSortBy');
+        const container = document.getElementById('googleStudentListContainer');
+        
+        if (!sortByEl || !container) return;
+        
+        const sortBy = sortByEl.value;
+        const items = Array.from(container.querySelectorAll('.google-student-item'));
+        
+        items.sort((a, b) => {
+            const indexA = parseInt(a.dataset.index);
+            const indexB = parseInt(b.dataset.index);
+            
+            if (isNaN(indexA) || isNaN(indexB) || !homeVisitData[indexA] || !homeVisitData[indexB]) {
+                return 0;
+            }
+            
+            const studentA = homeVisitData[indexA];
+            const studentB = homeVisitData[indexB];
+            
+            switch (sortBy) {
+                case 'distance':
+                    return (studentA.distanceFromSchool || 999) - (studentB.distanceFromSchool || 999);
+                case 'priority':
+                    return parseInt(b.dataset.priority || 0) - parseInt(a.dataset.priority || 0);
+                case 'class':
+                    return (studentA['ห้องเรียน'] || '').localeCompare(studentB['ห้องเรียน'] || '');
+                case 'name':
+                    return (studentA['ชื่อและนามสกุล'] || '').localeCompare(studentB['ชื่อและนามสกุล'] || '');
+                default:
+                    return 0;
+            }
+        });
+        
+        // เรียงใหม่ใน DOM
+        items.forEach(item => container.appendChild(item));
+    },
+    
+// อัปเดตสรุปเส้นทาง - Enhanced Version
+updateRouteSummary() {
+    const selectedCountEl = document.getElementById('selectedCount');
+    const estimatedDistanceEl = document.getElementById('estimatedDistance');
+    const estimatedTimeEl = document.getElementById('estimatedTime');
+    const summaryDiv = document.getElementById('googleRouteSummary');
+    const progressBar = document.getElementById('selectionProgress');
+    const statusEl = document.getElementById('summaryStatus');
+    const maxVisitsEl = document.getElementById('googleMaxVisits');
+    
+    // ตรวจสอบว่า modal เปิดอยู่
+    const modal = document.getElementById('routePlanningGoogleModal');
+    if (!modal || !modal.classList.contains('show')) return;
+    
+    if (!selectedCountEl || !estimatedDistanceEl || !estimatedTimeEl || !summaryDiv) return;
+    
+    try {
+        const selectedCount = this.getSelectedStudentsCount();
+        const maxVisits = parseInt(maxVisitsEl?.value) || 25;
+        
+        // คำนวณระยะทางและเวลา
+        let totalDistance = 0;
+        let validStudents = 0;
+        
+        if (selectedCount > 0) {
+            const checkedBoxes = Array.from(document.querySelectorAll('.google-student-checkbox:checked')).filter(checkbox => {
+                const parentItem = checkbox.closest('.google-student-item');
+                return parentItem && 
+                       parentItem.style.display !== 'none' && 
+                       parentItem.offsetParent !== null;
+            });
+            
+            checkedBoxes.forEach(checkbox => {
+                const index = parseInt(checkbox.value);
+                if (!isNaN(index) && homeVisitData && homeVisitData[index]) {
+                    const student = homeVisitData[index];
+                    totalDistance += parseFloat(student.distanceFromSchool) || 0;
+                    validStudents++;
+                }
+            });
+        }
+        
+        const estimatedTime = (validStudents * 30) + (totalDistance * 3);
+        const progressPercent = Math.min((selectedCount / maxVisits) * 100, 100);
+        
+        // อัปเดต UI
+        selectedCountEl.textContent = selectedCount.toString();
+        estimatedDistanceEl.textContent = totalDistance.toFixed(1);
+        estimatedTimeEl.textContent = Math.round(estimatedTime).toString();
+        
+        // อัปเดต progress bar
+        if (progressBar) {
+            progressBar.style.width = progressPercent + '%';
+            
+            // เปลี่ยนสีตามสถานะ
+            progressBar.className = 'progress-bar';
+            if (selectedCount > maxVisits) {
+                progressBar.classList.add('bg-danger');
+            } else if (selectedCount > maxVisits * 0.8) {
+                progressBar.classList.add('bg-warning');
+            } else {
+                progressBar.classList.add('bg-success');
+            }
+        }
+        
+        // อัปเดตสถานะ
+        if (statusEl) {
+            if (selectedCount === 0) {
+                statusEl.textContent = 'เลือกนักเรียนเพื่อเริ่มวางแผนเส้นทาง';
+                statusEl.className = 'text-muted';
+            } else if (selectedCount > maxVisits) {
+                statusEl.textContent = `เลือกเกินขีดจำกัด! (${selectedCount}/${maxVisits})`;
+                statusEl.className = 'text-danger';
+            } else {
+                statusEl.textContent = `พร้อมสร้างเส้นทาง (${selectedCount}/${maxVisits})`;
+                statusEl.className = 'text-success';
+            }
+        }
+        
+        // อัปเดตสี summary
+        if (selectedCount > maxVisits) {
+            summaryDiv.className = 'alert alert-warning border';
+        } else if (selectedCount > 0) {
+            summaryDiv.className = 'alert alert-light border border-success';
+        } else {
+            summaryDiv.className = 'alert alert-light border';
+        }
+        
+        // เปิด/ปิดปุ่ม
+        this.validateSelection();
+        
+        // อัปเดต travel mode display
+        this.updateTravelModeDisplay();
+        
+        console.log(`✅ Summary updated: ${selectedCount} students, ${totalDistance.toFixed(1)}km, ${Math.round(estimatedTime)}min`);
+        
+    } catch (error) {
+        console.error('❌ Error updating route summary:', error);
+    }
+},
+    
+    // เลือกทั้งหมด
+selectAll() {
+        const maxVisitsEl = document.getElementById('googleMaxVisits');
+        if (!maxVisitsEl) return;
+        
+        const maxVisits = parseInt(maxVisitsEl.value) || 25;
+        const visibleCheckboxes = Array.from(document.querySelectorAll('.google-student-checkbox')).filter(checkbox => {
+            const parentItem = checkbox.closest('.google-student-item');
+            return parentItem && 
+                   parentItem.style.display !== 'none' && 
+                   parentItem.offsetParent !== null;
+        });
+        
+        let count = 0;
+        visibleCheckboxes.forEach(checkbox => {
+            if (count < maxVisits) {
+                checkbox.checked = true;
+                count++;
+            } else {
+                checkbox.checked = false;
+            }
+        });
+        
+        console.log(`✅ Selected ${count} students out of ${maxVisits} max`);
+        
+        // อัปเดตสรุป
+        setTimeout(() => this.updateRouteSummary(), 100);
+    },
+    
+    // ยกเลิกทั้งหมด
+unselectAll() {
+        const visibleCheckboxes = Array.from(document.querySelectorAll('.google-student-checkbox')).filter(checkbox => {
+            const parentItem = checkbox.closest('.google-student-item');
+            return parentItem && 
+                   parentItem.style.display !== 'none' && 
+                   parentItem.offsetParent !== null;
+        });
+        
+        visibleCheckboxes.forEach(checkbox => {
+            checkbox.checked = false;
+        });
+        
+        console.log('🗑️ Unselected all visible students');
+        
+        // อัปเดตสรุป
+        setTimeout(() => this.updateRouteSummary(), 100);
+    },
+    
+    // การกระทำด่วน
+    quickRoute(type) {
+        // ยกเลิกทั้งหมดก่อน
+        this.unselectAll();
+        
+        // เลือกเฉพาะ checkbox ที่แสดงผลอยู่
+        const visibleCheckboxes = Array.from(document.querySelectorAll('.google-student-checkbox')).filter(checkbox => {
+            const parentItem = checkbox.closest('.google-student-item');
+            return parentItem && parentItem.style.display !== 'none';
+        });
+        
+        let limits = { urgent: 5, nearby: 10, notVisited: 15 };
+        let count = 0;
+        
+        visibleCheckboxes.forEach(checkbox => {
+            if (count >= limits[type]) return;
+            
+            const studentIndex = parseInt(checkbox.value);
+            if (isNaN(studentIndex) || !homeVisitData[studentIndex]) return;
+            
+            const student = homeVisitData[studentIndex];
+            let shouldSelect = false;
+            
+            switch (type) {
+                case 'urgent':
+                    shouldSelect = this.calculatePriorityScore(student) >= 6;
+                    break;
+                case 'nearby':
+                    shouldSelect = student.distanceFromSchool && student.distanceFromSchool < 3;
+                    break;
+                case 'notVisited':
+                    shouldSelect = student['สถานการณ์เยี่ยม'] !== 'เยี่ยมแล้ว';
+                    break;
+            }
+            
+            if (shouldSelect) {
+                checkbox.checked = true;
+                count++;
+            }
+        });
+        
+        this.updateRouteSummary();
+        
+        // แจ้งเตือน
+        const messages = {
+            urgent: `เลือกเคสเร่งด่วน ${count} คนแล้ว`,
+            nearby: `เลือกนักเรียนใกล้โรงเรียน ${count} คนแล้ว`,
+            notVisited: `เลือกนักเรียนที่ยังไม่เยี่ยม ${count} คนแล้ว`
+        };
+        
+        this.showToast(messages[type], 'success');
+    },
+ ///////////////////////////////////////   
+// Enhanced previewRoute - Simple & Clean Design สำหรับคุณครู
+previewRoute() {
+    const selectedStudents = this.getSelectedStudents();
+    if (selectedStudents.length === 0) {
+        this.showToast('กรุณาเลือกนักเรียนที่ต้องการเยี่ยมก่อน', 'warning');
+        return;
+    }
+    
+    console.log('🔍 Creating clean preview for', selectedStudents.length, 'students');
+    
+    const previewUrl = this.generateGoogleMapsUrl(selectedStudents, true);
+    const totalDistance = selectedStudents.reduce((sum, student) => {
+        return sum + (student.distanceFromSchool || 0);
+    }, 0);
+    const estimatedTime = selectedStudents.length * 30 + totalDistance * 3;
+    
+    // เปิดหน้าต่างใหม่
+    const previewWindow = window.open('', '_blank', 'width=1000,height=700,scrollbars=yes,resizable=yes');
+    
+    if (!previewWindow) {
+        this.showToast('ไม่สามารถเปิดหน้าต่างใหม่ได้ กรุณาอนุญาต popup', 'error');
+        return;
+    }
+    
+    previewWindow.document.open();
+    previewWindow.document.write(this.generateCleanPreviewHTML(selectedStudents, previewUrl, totalDistance, estimatedTime));
+    previewWindow.document.close();
+    
+    console.log('✅ Clean preview window created successfully');
+},
+
+// สร้าง HTML แบบเรียบง่าย
+generateCleanPreviewHTML(selectedStudents, previewUrl, totalDistance, estimatedTime) {
+    return `
+        <!DOCTYPE html>
+        <html lang="th">
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>แผนการเยี่ยมบ้านนักเรียน</title>
+                <link rel="preconnect" href="https://fonts.googleapis.com">
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+                <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+                <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+                <style>
+                    ${this.getCleanPreviewCSS()}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <!-- Header -->
+                    <div class="header">
+                        <div class="header-content">
+                            <h1><i class="fas fa-route"></i> แผนการเยี่ยมบ้านนักเรียน</h1>
+                            <p class="date">${new Date().toLocaleDateString('th-TH', { 
+                                year: 'numeric', 
+                                month: 'long', 
+                                day: 'numeric',
+                                weekday: 'long'
+                            })}</p>
+                        </div>
+                        
+                        <!-- Quick Actions -->
+                        <div class="actions no-print">
+                            <button class="btn btn-primary" onclick="window.print()">
+                                <i class="fas fa-print"></i> พิมพ์
+                            </button>
+                            <a href="${previewUrl}" target="_blank" class="btn btn-success">
+                                <i class="fab fa-google"></i> Google Maps
+                            </a>
+                            <button class="btn btn-secondary" onclick="window.close()">
+                                <i class="fas fa-times"></i> ปิด
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Summary -->
+                    <div class="summary">
+                        <div class="summary-item">
+                            <i class="fas fa-home"></i>
+                            <div>
+                                <span class="number">${selectedStudents.length}</span>
+                                <span class="label">ครัวเรือน</span>
+                            </div>
+                        </div>
+                        <div class="summary-item">
+                            <i class="fas fa-road"></i>
+                            <div>
+                                <span class="number">${totalDistance.toFixed(1)}</span>
+                                <span class="label">กิโลเมตร</span>
+                            </div>
+                        </div>
+                        <div class="summary-item">
+                            <i class="fas fa-clock"></i>
+                            <div>
+                                <span class="number">${Math.floor(estimatedTime / 60)}:${String(estimatedTime % 60).padStart(2, '0')}</span>
+                                <span class="label">ชั่วโมง:นาที</span>
+                            </div>
+                        </div>
+                        <div class="summary-item">
+                            <i class="fas fa-car"></i>
+                            <div>
+                                <span class="number">${this.getTravelModeText()}</span>
+                                <span class="label">การเดินทาง</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Teacher Tips -->
+                    <div class="tips-section">
+                        <h2><i class="fas fa-lightbulb"></i> เคล็ดลับสำหรับการเยี่ยมบ้าน</h2>
+                        <div class="tips-grid">
+                            ${this.generateTeacherTips()}
+                        </div>
+                    </div>
+
+                    <!-- Emergency Contacts -->
+                    <div class="emergency-section">
+                        <h2><i class="fas fa-phone"></i> เบอร์ติดต่อฉุกเฉิน</h2>
+                        <div class="emergency-grid">
+                            ${this.generateEmergencyContacts()}
+                        </div>
+                    </div>
+
+                    <!-- Visit Preparation -->
+                    <div class="preparation-section">
+                        <h2><i class="fas fa-clipboard-list"></i> รายการเตรียมตัวก่อนเยี่ยม</h2>
+                        <div class="checklist">
+                            ${this.generatePreparationChecklist()}
+                        </div>
+                    </div>
+
+                    <!-- Students List -->
+                    <div class="students-section">
+                        <h2><i class="fas fa-users"></i> รายชื่อนักเรียน (${selectedStudents.length} คน)</h2>
+                        <div class="students-table">
+                            ${this.generateStudentsTable(selectedStudents)}
+                        </div>
+                    </div>
+
+                    <!-- Route Timeline -->
+                    <div class="timeline-section">
+                        <h2><i class="fas fa-route"></i> ลำดับการเยี่ยม (เรียงตามระยะทาง)</h2>
+                        <div class="timeline">
+                            ${this.generateOptimizedRouteTimeline(selectedStudents)}
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="footer">
+                        <p>พิมพ์เมื่อ: ${new Date().toLocaleString('th-TH')} | ระบบสารสนเทศเยี่ยมบ้านนักเรียน</p>
+                    </div>
+                </div>
+
+                <script>
+                    ${this.getCleanPreviewScript()}
+                </script>
+            </body>
+        </html>
+    `;
+},
+
+// CSS แบบเรียบง่าย
+getCleanPreviewCSS() {
+    return `
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8f9fa;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: #1a73e8;
+            color: white;
+            padding: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .header-content h1 {
+            font-size: 1.8rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-content h1 i {
+            margin-right: 0.5rem;
+        }
+
+        .date {
+            opacity: 0.9;
+            font-size: 1rem;
+        }
+
+        .actions {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #34a853;
+            color: white;
+        }
+
+        .btn-success {
+            background: #fbbc04;
+            color: #333;
+        }
+
+        .btn-secondary {
+            background: #ea4335;
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+        }
+
+        /* Summary */
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            padding: 2rem;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .summary-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: white;
+            border-radius: 8px;
+            border-left: 4px solid #1a73e8;
+        }
+
+        .summary-item i {
+            font-size: 1.5rem;
+            color: #1a73e8;
+        }
+
+        .number {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: 600;
+            line-height: 1;
+        }
+
+        .label {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* Sections */
+        .tips-section,
+        .emergency-section,
+        .preparation-section,
+        .students-section,
+        .timeline-section {
+            padding: 2rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        h2 {
+            font-size: 1.3rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h2 i {
+            color: #1a73e8;
+        }
+
+        /* Tips Grid */
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+        }
+
+        .tip-item {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 6px;
+            border-left: 3px solid #34a853;
+        }
+
+        .tip-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+
+        .tip-content {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        /* Emergency Contacts */
+        .emergency-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+        }
+
+        .emergency-item {
+            background: #fff3cd;
+            padding: 1rem;
+            border-radius: 6px;
+            border: 1px solid #ffeaa7;
+        }
+
+        .emergency-title {
+            font-weight: 600;
+            color: #856404;
+            margin-bottom: 0.5rem;
+        }
+
+        .emergency-number {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        /* Checklist */
+        .checklist {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 0.5rem;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+
+        .checklist-checkbox {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #1a73e8;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        /* Students Table */
+        .students-table {
+            overflow-x: auto;
+        }
+
+        .students-table table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .students-table th,
+        .students-table td {
+            padding: 0.75rem 0.5rem;
+            text-align: left;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .students-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .students-table tbody tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-visited {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-not-visited {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .priority-high {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        /* Assessment Grid */
+        .route-optimization {
+            background: #e8f5e8;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #34a853;
+        }
+
+        .route-optimization h4 {
+            color: #1b5e20;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .route-optimization p {
+            color: #2e7d32;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #1a73e8;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 1.5rem;
+            background: white;
+            padding: 1rem;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -25px;
+            top: 1rem;
+            width: 12px;
+            height: 12px;
+            background: #1a73e8;
+            border-radius: 50%;
+            border: 3px solid white;
+        }
+
+        .timeline-time {
+            font-weight: 600;
+            color: #1a73e8;
+            font-size: 0.9rem;
+        }
+
+        .timeline-content {
+            margin-top: 0.5rem;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 1rem 2rem;
+            background: #f8f9fa;
+            text-align: center;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        /* Print Styles */
+        @media print {
+            body {
+                background: white;
+                font-size: 12px;
+            }
+            
+            .no-print {
+                display: none !important;
+            }
+            
+            .container {
+                box-shadow: none;
+            }
+            
+            .header {
+                background: #1a73e8 !important;
+                color: white !important;
+            }
+            
+            .summary {
+                background: white !important;
+            }
+            
+            .timeline-item,
+            .tip-item,
+            .assessment-item {
+                page-break-inside: avoid;
+            }
+            
+            h2 {
+                page-break-after: avoid;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .summary {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .tips-grid,
+            .emergency-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .timeline {
+                padding-left: 1rem;
+            }
+            
+            .timeline::before {
+                left: 8px;
+            }
+            
+            .timeline-item::before {
+                left: -18px;
+            }
+        }
+    `;
+},
+
+// เคล็ดลับสำหรับครู
+generateTeacherTips() {
+    const tips = [
+        {
+            title: '📞 ติดต่อล่วงหน้า',
+            content: 'โทรนัดหมายก่อนเยี่ยม 1-2 วัน เพื่อให้ผู้ปกครองเตรียมตัว'
+        },
+        {
+            title: '🕐 เวลาที่เหมาะสม',
+            content: 'เยี่ยมช่วง 16:00-18:00 น. เมื่อผู้ปกครองกลับจากงาน'
+        },
+        {
+            title: '🎒 เตรียมอุปกรณ์',
+            content: 'สมุดบันทึก, ปากกา, น้ำดื่ม, และแบตเตอรี่โทรศัพท์เต็ม'
+        },
+        {
+            title: '👥 สร้างสัมพันธ์',
+            content: 'เริ่มด้วยการทักทายและแนะนำตัว สร้างบรรยากาศที่อบอุ่น'
+        },
+        {
+            title: '👂 ฟังอย่างตั้งใจ',
+            content: 'ให้ผู้ปกครองเล่าปัญหาและความต้องการอย่างอดทน'
+        },
+        {
+            title: '💡 ให้คำแนะนำ',
+            content: 'เสนอแนวทางแก้ไขปัญหาแบบเป็นขั้นตอนและปฏิบัติได้จริง'
+        }
+    ];
+
+    return tips.map(tip => `
+        <div class="tip-item">
+            <div class="tip-title">${tip.title}</div>
+            <div class="tip-content">${tip.content}</div>
+        </div>
+    `).join('');
+},
+
+// เบอร์ฉุกเฉิน
+generateEmergencyContacts() {
+    const contacts = [
+        { title: 'โรงพยาบาลใกล้เคียง', number: '1669' },
+        { title: 'ตำรวจ', number: '191' },
+        { title: 'ดับเพลิง', number: '199' },
+        { title: 'ศูนย์ช่วยเหลือเด็ก', number: '1387' },
+        { title: 'ครูเจ้าของโครงการ', number: 'xxx-xxx-xxxx' },
+        { title: 'ผู้อำนวยการ', number: '083-664-5989' }
+    ];
+
+    return contacts.map(contact => `
+        <div class="emergency-item">
+            <div class="emergency-title">${contact.title}</div>
+            <div class="emergency-number">${contact.number}</div>
+        </div>
+    `).join('');
+},
+
+// รายการเตรียมตัว
+generatePreparationChecklist() {
+    const items = [
+        'ตรวจสอบข้อมูลนักเรียนล่วงหน้า',
+        'เตรียมเอกสารประกอบการเยี่ยม',
+        'ชาร์จโทรศัพท์และเตรียมพาวเวอร์แบงค์',
+        'แจ้งเส้นทางให้ครอบครัวทราบ',
+        'เตรียมน้ำดื่มและอาหารเบา ๆ',
+        'ตรวจสอบสภาพรถและน้ำมัน',
+        'เตรียมหน้ากากอนามัยและเจลล้างมือ',
+        'นำแผนที่หรือ GPS สำรอง'
+    ];
+
+    return items.map(item => `
+        <div class="checklist-item">
+            <div class="checklist-checkbox" onclick="toggleCheck(this)"></div>
+            <span>${item}</span>
+        </div>
+    `).join('');
+},
+
+// ตารางนักเรียน
+generateStudentsTable(students) {
+    const tableRows = students.map((student, index) => {
+        const isVisited = student['สถานการณ์เยี่ยม'] === 'เยี่ยมแล้ว';
+        const priorityScore = this.calculatePriorityScore(student);
+        const isHighPriority = priorityScore >= 6;
+        
+        return `
+            <tr>
+                <td>${index + 1}</td>
+                <td><strong>${student['ชื่อและนามสกุล'] || 'ไม่ระบุ'}</strong></td>
+                <td>${student['ห้องเรียน'] || '-'}</td>
+                <td>${student.distanceFromSchool ? student.distanceFromSchool.toFixed(1) + ' กม.' : '-'}</td>
+                <td>
+                    <span class="status-badge ${isVisited ? 'status-visited' : 'status-not-visited'}">
+                        ${isVisited ? 'เยี่ยมแล้ว' : 'ยังไม่เยี่ยม'}
+                    </span>
+                    ${isHighPriority ? '<span class="status-badge priority-high">สำคัญ</span>' : ''}
+                </td>
+                <td>${this.formatCurrency(student['รายได้'])}</td>
+                <td>□ เยี่ยมแล้ว</td>
+            </tr>
+        `;
+    }).join('');
+
+    return `
+        <table>
+            <thead>
+                <tr>
+                    <th>ลำดับ</th>
+                    <th>ชื่อ-นามสกุล</th>
+                    <th>ห้อง</th>
+                    <th>ระยะทาง</th>
+                    <th>สถานะ</th>
+                    <th>รายได้</th>
+                    <th>บันทึก</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${tableRows}
+            </tbody>
+        </table>
+    `;
+},
+
+// ลำดับการเยี่ยมที่เหมาะสม (เรียงตามระยะทาง)
+generateOptimizedRouteTimeline(students) {
+    // เรียงนักเรียนตามระยะทางจากใกล้ไปไกล
+    const sortedStudents = [...students].sort((a, b) => {
+        const distanceA = a.distanceFromSchool || 999;
+        const distanceB = b.distanceFromSchool || 999;
+        return distanceA - distanceB;
+    });
+
+    const startTime = new Date();
+    startTime.setHours(15, 0, 0, 0); // เริ่ม 15:00
+
+    // คำนวณระยะทางรวมที่ประหยัด
+    const totalOptimizedDistance = sortedStudents.reduce((sum, student, index) => {
+        if (index === 0) return sum + (student.distanceFromSchool || 0);
+        const prevDistance = sortedStudents[index - 1].distanceFromSchool || 0;
+        const currentDistance = student.distanceFromSchool || 0;
+        return sum + Math.abs(currentDistance - prevDistance);
+    }, 0);
+
+    let timeline = `
+        <div class="route-optimization">
+            <h4><i class="fas fa-route"></i> การเพิ่มประสิทธิภาพเส้นทาง</h4>
+            <p>เรียงลำดับตามระยะทางจากใกล้ไปไกล ประหยัดเวลาเดินทางประมาณ ${Math.round((students.length * 0.8))} นาที</p>
+        </div>
+        
+        <div class="timeline-item">
+            <div class="timeline-time">${startTime.toLocaleTimeString('th-TH', {hour: '2-digit', minute: '2-digit'})}</div>
+            <div class="timeline-content">
+                <strong>🏫 ออกจากโรงเรียน</strong><br>
+                ตรวจสอบอุปกรณ์และเส้นทางอีกครั้ง<br>
+                <small style="color: #34a853;">📍 เส้นทางนี้ประหยัดระยะทาง ${totalOptimizedDistance.toFixed(1)} กม.</small>
+            </div>
+        </div>
+    `;
+
+    let cumulativeTime = 0;
+    sortedStudents.forEach((student, index) => {
+        // คำนวณเวลาเดินทาง (ขึ้นอยู่กับระยะทาง)
+        const travelTime = index === 0 ? 
+            Math.round((student.distanceFromSchool || 0) * 2) : // เวลาจากโรงเรียนไปบ้านแรก
+            Math.round(Math.abs((student.distanceFromSchool || 0) - (sortedStudents[index - 1].distanceFromSchool || 0)) * 3); // เวลาระหว่างบ้าน
+        
+        const visitTime = 30; // เวลาเยี่ยม 30 นาที
+        cumulativeTime += travelTime + visitTime;
+
+        const arrivalTime = new Date(startTime);
+        arrivalTime.setMinutes(startTime.getMinutes() + cumulativeTime - visitTime);
+
+        const departTime = new Date(arrivalTime);
+        departTime.setMinutes(arrivalTime.getMinutes() + visitTime);
+
+        // หาระยะทางจากบ้านก่อนหน้า
+        const distanceFromPrevious = index === 0 ? 
+            (student.distanceFromSchool || 0) : 
+            Math.abs((student.distanceFromSchool || 0) - (sortedStudents[index - 1].distanceFromSchool || 0));
+
+        timeline += `
+            <div class="timeline-item">
+                <div class="timeline-time">${arrivalTime.toLocaleTimeString('th-TH', {hour: '2-digit', minute: '2-digit'})} - ${departTime.toLocaleTimeString('th-TH', {hour: '2-digit', minute: '2-digit'})}</div>
+                <div class="timeline-content">
+                    <strong>🏠 ${student['ชื่อและนามสกุล']}</strong> <span style="color: #1a73e8;">(ลำดับที่ ${index + 1})</span><br>
+                    ห้อง ${student['ห้องเรียน']} • ห่างจากโรงเรียน ${student.distanceFromSchool ? student.distanceFromSchool.toFixed(1) + ' กม.' : 'ไม่ทราบ'}<br>
+                    <small style="color: #666;">
+                        🚗 เดินทาง: ${travelTime} นาที • 🏠 เยี่ยม: ${visitTime} นาที
+                        ${index > 0 ? ` • 📏 จากบ้านก่อนหน้า: ${distanceFromPrevious.toFixed(1)} กม.` : ''}
+                    </small><br>
+                    ${this.getStudentPriorityInfo(student)}
+                </div>
+            </div>
+        `;
+    });
+
+    // เวลากลับโรงเรียน
+    const lastStudent = sortedStudents[sortedStudents.length - 1];
+    const returnTravelTime = Math.round((lastStudent.distanceFromSchool || 0) * 2);
+    cumulativeTime += returnTravelTime;
+
+    const returnTime = new Date(startTime);
+    returnTime.setMinutes(startTime.getMinutes() + cumulativeTime);
+
+    timeline += `
+        <div class="timeline-item">
+            <div class="timeline-time">${returnTime.toLocaleTimeString('th-TH', {hour: '2-digit', minute: '2-digit'})}</div>
+            <div class="timeline-content">
+                <strong>🏫 กลับโรงเรียน</strong><br>
+                สรุปผลการเยี่ยมและบันทึกข้อมูล<br>
+                <small style="color: #34a853;">
+                    🎯 ใช้เวลารวม: ${Math.floor(cumulativeTime / 60)} ชั่วโมง ${cumulativeTime % 60} นาที
+                </small>
+            </div>
+        </div>
+    `;
+
+    return timeline;
+},
+
+// ข้อมูลความสำคัญของนักเรียน
+getStudentPriorityInfo(student) {
+    const priorityScore = this.calculatePriorityScore(student);
+    const isVisited = student['สถานการณ์เยี่ยม'] === 'เยี่ยมแล้ว';
+    const income = student['รายได้'] ? parseFloat(student['รายได้'].toString().replace(/[฿,]/g, '')) : 0;
+    
+    let info = '<small style="color: #1a73e8;">';
+    
+    if (!isVisited) {
+        info += '🔴 ยังไม่เยี่ยม • ';
+    } else {
+        info += '✅ เยี่ยมแล้ว • ';
+    }
+    
+    if (priorityScore >= 6) {
+        info += '⚠️ ความสำคัญสูง • ';
+    }
+    
+    if (income > 0 && income < 5000) {
+        info += '💰 รายได้ต่ำ • ';
+    }
+    
+    if (student['ได้สวัสดิการแห่งรัฐ'] === 'TRUE') {
+        info += '🏥 ได้สวัสดิการ • ';
+    }
+    
+    // ลบ " • " ท้ายสุด
+    info = info.replace(/ • $/, '');
+    info += '</small>';
+    
+    return info;
+},
+
+
+
+// JavaScript แบบเรียบง่าย
+getCleanPreviewScript() {
+    return `
+        // Simple functionality  
+        function toggleCheck(element) {
+            if (element.classList.contains('checked')) {
+                element.classList.remove('checked');
+                element.innerHTML = '';
+                element.style.background = '';
+                element.style.border = '2px solid #1a73e8';
+            } else {
+                element.classList.add('checked');
+                element.innerHTML = '<i class="fas fa-check" style="color: white; font-size: 12px;"></i>';
+                element.style.background = '#1a73e8';
+                element.style.border = '2px solid #1a73e8';
+            }
+            autoSave(); // บันทึกทันทีเมื่อมีการเปลี่ยนแปลง
+        }
+
+        // Auto-save functionality
+        function autoSave() {
+            const checkboxes = document.querySelectorAll('.checklist-checkbox.checked');
+            const checkedTableItems = document.querySelectorAll('td:contains("☑")');
+            
+            const data = {
+                checkedItems: Array.from(checkboxes).map(cb => cb.parentElement.textContent.trim()),
+                visitedStudents: Array.from(checkedTableItems).map(item => item.parentElement.children[1].textContent),
+                timestamp: new Date().toISOString()
+            };
+            
+            localStorage.setItem('homeVisitProgress', JSON.stringify(data));
+        }
+
+        // Load saved data
+        function loadSavedData() {
+            const saved = localStorage.getItem('homeVisitProgress');
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    console.log('Loaded saved progress:', data);
+                } catch (e) {
+                    console.log('No valid saved data found');
+                }
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📋 Clean preview initialized');
+            
+            // Load any saved progress
+            loadSavedData();
+            
+            // Auto-save every 30 seconds
+            setInterval(autoSave, 30000);
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.key === 'p') {
+                    e.preventDefault();
+                    window.print();
+                }
+                if (e.key === 'Escape') {
+                    window.close();
+                }
+                if (e.ctrlKey && e.key === 's') {
+                    e.preventDefault();
+                    autoSave();
+                    showNotification('บันทึกข้อมูลแล้ว');
+                }
+            });
+
+            // Show notification function
+            function showNotification(message) {
+                const notification = document.createElement('div');
+                notification.style.cssText = \`
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #1a73e8;
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 6px;
+                    z-index: 9999;
+                    font-size: 14px;
+                    animation: slideIn 0.3s ease-out;
+                \`;
+                notification.innerHTML = \`<i class="fas fa-check"></i> \${message}\`;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => notification.remove(), 3000);
+            }
+            
+            // Add slide-in animation
+            const style = document.createElement('style');
+            style.textContent = \`
+                @keyframes slideIn {
+                    from {
+                        transform: translateX(100%);
+                        opacity: 0;
+                    }
+                    to {
+                        transform: translateX(0);
+                        opacity: 1;
+                    }
+                }
+            \`;
+            document.head.appendChild(style);
+            
+            console.log('✅ Clean preview fully loaded');
+        });
+
+        // Before unload - save progress
+        window.addEventListener('beforeunload', function() {
+            autoSave();
+        });
+
+        // Add click handlers to table checkboxes
+        document.addEventListener('click', function(e) {
+            if (e.target.textContent === '□ เยี่ยมแล้ว') {
+                e.target.textContent = e.target.textContent === '□ เยี่ยมแล้ว' ? '☑ เยี่ยมแล้ว' : '□ เยี่ยมแล้ว';
+                e.target.style.color = e.target.textContent.includes('☑') ? '#155724' : '#333';
+                autoSave();
+            }
+        });
+    `;
+},
+
+// ฟอร์แมตเงิน (เพิ่มเติม)
+formatCurrency(amount) {
+    if (!amount) return 'ไม่ระบุ';
+    const numAmount = parseFloat(amount.toString().replace(/[฿,]/g, ''));
+    if (isNaN(numAmount)) return 'ไม่ระบุ';
+    
+    if (numAmount < 5000) return `${numAmount.toLocaleString()} บาท (ต่ำ)`;
+    if (numAmount < 15000) return `${numAmount.toLocaleString()} บาท (ปานกลาง)`;
+    return `${numAmount.toLocaleString()} บาท`;
+},
+  
+  
+  ///////////////////////////////////////
+    
+    // สร้างเส้นทาง Google Maps
+    generateGoogleRoute() {
+        const selectedStudents = this.getSelectedStudents();
+        const maxVisits = parseInt(document.getElementById('googleMaxVisits').value);
+        
+        if (selectedStudents.length === 0) {
+            this.showToast('กรุณาเลือกนักเรียนที่ต้องการเยี่ยมก่อน', 'warning');
+            return;
+        }
+        
+        if (selectedStudents.length > maxVisits) {
+            this.showToast(`เลือกได้สูงสุด ${maxVisits} ครัวเรือน (เลือกไว้ ${selectedStudents.length} ครัวเรือน)`, 'error');
+            return;
+        }
+        
+        // สร้าง URL และเปิด Google Maps
+        const googleMapsUrl = this.generateGoogleMapsUrl(selectedStudents);
+        
+        // บันทึกเส้นทางปัจจุบัน
+        this.optimizedRoute = selectedStudents;
+        
+        // เปิด Google Maps
+        window.open(googleMapsUrl, '_blank');
+        
+        // แจ้งเตือนความสำเร็จ
+        this.showToast(`เปิด Google Maps สำหรับ ${selectedStudents.length} ครัวเรือนแล้ว`, 'success');
+        
+        // ปิด modal
+        const modal = bootstrap.Modal.getInstance(document.getElementById('routePlanningGoogleModal'));
+        if (modal) modal.hide();
+        
+        console.log('🗺️ Google Maps route generated for', selectedStudents.length, 'students');
+    },
+    
+    // ดึงนักเรียนที่เลือก
+    getSelectedStudents() {
+        const selectedStudents = [];
+        // เลือกเฉพาะ checkbox ที่ checked และ parent element แสดงผลอยู่
+        document.querySelectorAll('.google-student-checkbox:checked').forEach(checkbox => {
+            const parentItem = checkbox.closest('.google-student-item');
+            // ตรวจสอบว่า item แสดงผลอยู่หรือไม่ (ไม่ถูกซ่อนจากการค้นหา)
+            if (parentItem && parentItem.style.display !== 'none') {
+                const studentIndex = parseInt(checkbox.value);
+                const student = homeVisitData[studentIndex];
+                if (student && student['LatLongHome']) {
+                    selectedStudents.push({
+                        ...student,
+                        originalIndex: studentIndex
+                    });
+                }
+            }
+        });
+        
+        // เรียงลำดับตามการตั้งค่า
+        return this.sortSelectedStudents(selectedStudents);
+    },
+    
+    // เรียงลำดับนักเรียนที่เลือก
+    sortSelectedStudents(students) {
+        const sortBy = document.getElementById('googleSortBy').value;
+        
+        return students.sort((a, b) => {
+            switch (sortBy) {
+                case 'distance':
+                    return (a.distanceFromSchool || 999) - (b.distanceFromSchool || 999);
+                case 'priority':
+                    return this.calculatePriorityScore(b) - this.calculatePriorityScore(a);
+                case 'class':
+                    return (a['ห้องเรียน'] || '').localeCompare(b['ห้องเรียน'] || '');
+                case 'name':
+                    return (a['ชื่อและนามสกุล'] || '').localeCompare(b['ชื่อและนามสกุล'] || '');
+                default:
+                    return 0;
+            }
+        });
+    },
+    
+    // สร้าง URL สำหรับ Google Maps
+    generateGoogleMapsUrl(students, preview = false) {
+        // จุดเริ่มต้น (โรงเรียน)
+        const schoolCoords = '14.222052,99.472970';
+        
+        // สร้างรายการจุดหยุด
+        const waypoints = students.map(student => {
+            const coords = student['LatLongHome'].replace(/\s+/g, '');
+            return coords;
+        }).join('|');
+        
+        // ประเภทการเดินทาง
+        const travelMode = document.getElementById('googleTravelMode').value;
+        
+        // สร้าง URL
+        let url = 'https://www.google.com/maps/dir/';
+        
+        // เพิ่มจุดเริ่มต้น
+        url += `${schoolCoords}/`;
+        
+        // เพิ่มจุดหยุด
+        students.forEach(student => {
+            const coords = student['LatLongHome'].replace(/\s+/g, '');
+            url += `${coords}/`;
+        });
+        
+        // กลับโรงเรียน
+        url += `${schoolCoords}/`;
+        
+        // เพิ่มพารามิเตอร์
+        url += `?hl=th&dirflg=${this.getTravelModeCode(travelMode)}`;
+        
+        // เพิ่มการตั้งค่าเพิ่มเติม
+        if (!preview) {
+            url += '&travelmode=' + travelMode;
+            url += '&units=metric';
+        }
+        
+        return url;
+    },
+    
+    // แปลงโหมดการเดินทาง
+    getTravelModeCode(mode) {
+        const modes = {
+            'driving': 'd',
+            'walking': 'w',
+            'bicycling': 'b',
+            'transit': 'r'
+        };
+        return modes[mode] || 'd';
+    },
+    
+    // ได้ข้อความโหมดการเดินทาง
+    getTravelModeText() {
+        const mode = document.getElementById('googleTravelMode').value;
+        const modes = {
+            'driving': '🚗 ขับรถ',
+            'walking': '🚶 เดินเท้า',
+            'bicycling': '🚴 จักรยาน',
+            'transit': '🚌 ขนส่งสาธารณะ'
+        };
+        return modes[mode] || 'ขับรถ';
+    },
+    
+    // ได้ข้อความการเรียงลำดับ
+    getSortByText() {
+        const sortBy = document.getElementById('googleSortBy').value;
+        const sorts = {
+            'distance': 'ระยะทางใกล้สุด',
+            'priority': 'ความสำคัญ',
+            'class': 'ห้องเรียน',
+            'name': 'ชื่อ A-Z'
+        };
+        return sorts[sortBy] || 'ระยะทางใกล้สุด';
+    },
+    
+    // แชร์เส้นทาง
+    shareRoute() {
+        const selectedStudents = this.getSelectedStudents();
+        if (selectedStudents.length === 0) {
+            this.showToast('กรุณาเลือกนักเรียนที่ต้องการเยี่ยมก่อน', 'warning');
+            return;
+        }
+        
+        // สร้างข้อความแชร์
+        const routeText = this.generateShareText(selectedStudents);
+        
+        // ตรวจสอบว่ามี LINE LIFF หรือไม่
+        if (typeof liff !== 'undefined' && liff.isLoggedIn()) {
+            // แชร์ผ่าน LINE
+            this.shareViaLine(routeText, selectedStudents);
+        } else {
+            // คัดลอกข้อความ
+            this.copyToClipboard(routeText);
+        }
+    },
+    
+    // สร้างข้อความแชร์
+    generateShareText(students) {
+        const totalDistance = students.reduce((sum, student) => {
+            return sum + (student.distanceFromSchool || 0);
+        }, 0);
+        
+        const estimatedTime = students.length * 30 + totalDistance * 3;
+        
+        let text = `📍 แผนการเยี่ยมบ้านนักเรียน\n\n`;
+        text += `🕐 วันที่: ${new Date().toLocaleDateString('th-TH')}\n`;
+        text += `👥 จำนวน: ${students.length} ครัวเรือน\n`;
+        text += `🚗 ประเภท: ${this.getTravelModeText()}\n`;
+        text += `📏 ระยะทาง: ${totalDistance.toFixed(1)} กม. (ประมาณ)\n`;
+        text += `⏱️ เวลา: ${Math.round(estimatedTime)} นาที (ประมาณ)\n\n`;
+        
+        text += `📋 รายการเยี่ยม:\n`;
+        students.forEach((student, index) => {
+            text += `${index + 1}. ${student['ชื่อและนามสกุล']} (${student['ห้องเรียน']})\n`;
+        });
+        
+        text += `\n🗺️ Google Maps: ${this.generateGoogleMapsUrl(students)}`;
+        
+        return text;
+    },
+    
+    // แชร์ผ่าน LINE
+    shareViaLine(text, students) {
+        if (typeof liff === 'undefined') {
+            this.copyToClipboard(text);
+            return;
+        }
+        
+        // สร้าง Flex Message
+        const flexMessage = {
+            type: "flex",
+            altText: "แผนการเยี่ยมบ้านนักเรียน",
+            contents: {
+                type: "bubble",
+                size: "giga",
+                header: {
+                    type: "box",
+                    layout: "vertical",
+                    contents: [
+                        {
+                            type: "text",
+                            text: "📍 แผนการเยี่ยมบ้านนักเรียน",
+                            weight: "bold",
+                            size: "lg",
+                            color: "#ffffff"
+                        },
+                        {
+                            type: "text",
+                            text: new Date().toLocaleDateString('th-TH'),
+                            size: "sm",
+                            color: "#ffffff",
+                            margin: "sm"
+                        }
+                    ],
+                    backgroundColor: "#28a745",
+                    paddingAll: "20px"
+                },
+                body: {
+                    type: "box",
+                    layout: "vertical",
+                    contents: [
+                        {
+                            type: "box",
+                            layout: "baseline",
+                            contents: [
+                                { type: "text", text: "จำนวน:", flex: 2, size: "sm", color: "#aaaaaa" },
+                                { type: "text", text: `${students.length} ครัวเรือน`, flex: 3, size: "sm", weight: "bold" }
+                            ]
+                        },
+                        {
+                            type: "box",
+                            layout: "baseline",
+                            contents: [
+                                { type: "text", text: "ประเภท:", flex: 2, size: "sm", color: "#aaaaaa" },
+                                { type: "text", text: this.getTravelModeText(), flex: 3, size: "sm" }
+                            ],
+                            margin: "sm"
+                        }
+                    ]
+                },
+                footer: {
+                    type: "box",
+                    layout: "vertical",
+                    contents: [
+                        {
+                            type: "button",
+                            style: "primary",
+                            height: "sm",
+                            action: {
+                                type: "uri",
+                                label: "🗺️ เปิด Google Maps",
+                                uri: this.generateGoogleMapsUrl(students)
+                            },
+                            color: "#4285f4"
+                        }
+                    ]
+                }
+            }
+        };
+        
+        liff.shareTargetPicker([flexMessage])
+            .then(() => {
+                this.showToast('แชร์เส้นทางเรียบร้อยแล้ว', 'success');
+            })
+            .catch(error => {
+                console.error('Error sharing:', error);
+                this.copyToClipboard(text);
+            });
+    },
+    
+    // คัดลอกข้อความ
+    copyToClipboard(text) {
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(text).then(() => {
+                this.showToast('คัดลอกข้อมูลเส้นทางแล้ว', 'success');
+            }).catch(() => {
+                this.fallbackCopyTextToClipboard(text);
+            });
+        } else {
+            this.fallbackCopyTextToClipboard(text);
+        }
+    },
+    
+    // วิธีคัดลอกสำรอง
+    fallbackCopyTextToClipboard(text) {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.top = "0";
+        textArea.style.left = "0";
+        textArea.style.position = "fixed";
+        
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+            document.execCommand('copy');
+            this.showToast('คัดลอกข้อมูลเส้นทางแล้ว', 'success');
+        } catch (err) {
+            this.showToast('ไม่สามารถคัดลอกได้ กรุณาคัดลอกด้วยตนเอง', 'error');
+        }
+        
+        document.body.removeChild(textArea);
+    },
+    
+    // แสดงการแจ้งเตือน Toast
+    showToast(message, type = 'info') {
+        const toastId = 'googleRouteToast_' + Date.now();
+        const bgClass = {
+            'success': 'bg-success',
+            'error': 'bg-danger',
+            'warning': 'bg-warning',
+            'info': 'bg-info'
+        }[type] || 'bg-info';
+        
+        const icon = {
+            'success': 'fas fa-check-circle',
+            'error': 'fas fa-exclamation-circle',
+            'warning': 'fas fa-exclamation-triangle',
+            'info': 'fas fa-info-circle'
+        }[type] || 'fas fa-info-circle';
+        
+        const toastHTML = `
+            <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+                <div id="${toastId}" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                    <div class="toast-header ${bgClass} text-white">
+                        <i class="${icon} me-2"></i>
+                        <strong class="me-auto">Google Maps Route</strong>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // เพิ่ม toast
+        document.body.insertAdjacentHTML('beforeend', toastHTML);
+        
+        // แสดง toast
+        const toast = new bootstrap.Toast(document.getElementById(toastId), {
+            autohide: true,
+            delay: type === 'error' ? 5000 : 3000
+        });
+        toast.show();
+        
+        // ลบ toast หลังจากปิด
+        document.getElementById(toastId).addEventListener('hidden.bs.toast', function() {
+            this.parentNode.remove();
+        });
+    }
+};
+
+// เริ่มต้นฟีเจอร์เมื่อ DOM โหลดเสร็จ
+document.addEventListener('DOMContentLoaded', function() {
+    // รอให้ระบบหลักโหลดเสร็จก่อน
+    setTimeout(() => {
+        RoutePlanningGoogle.init();
+    }, 1500);
+});
+
+// ฟังการอัปเดตข้อมูล
+document.addEventListener('dataLoaded', function() {
+    if (RoutePlanningGoogle.isInitialized) {
+        console.log('🔄 Google route planning data updated');
+    }
+});

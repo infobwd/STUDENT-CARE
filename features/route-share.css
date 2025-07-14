@@ -1,0 +1,346 @@
+/* features/route-share.css */
+/* สไตล์สำหรับฟีเจอร์แชร์เส้นทาง */
+
+/* ปุ่มแชร์ LINE */
+.btn-line-share {
+    background: linear-gradient(135deg, #06C755 0%, #05B050 100%);
+    border: none;
+    color: white;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(6, 199, 85, 0.3);
+}
+
+.btn-line-share:hover {
+    background: linear-gradient(135deg, #05B050 0%, #04A046 100%);
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(6, 199, 85, 0.4);
+}
+
+.btn-line-share:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(6, 199, 85, 0.3);
+}
+
+/* สถานะ Loading สำหรับปุ่มแชร์ */
+.btn-loading {
+    position: relative;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.btn-loading::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    animation: shimmer 1.5s infinite;
+}
+
+.btn-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    margin: -8px 0 0 -8px;
+    border: 2px solid transparent;
+    border-top: 2px solid #ffffff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* ข้อความแจ้งเตือนการแชร์ */
+.share-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    z-index: 9999;
+    font-size: 14px;
+    max-width: 350px;
+    min-width: 200px;
+    word-wrap: break-word;
+    animation: slideInRight 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    font-family: 'Google Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.share-message.success {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    color: #155724;
+    border-left: 4px solid #28a745;
+}
+
+.share-message.error {
+    background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+    color: #721c24;
+    border-left: 4px solid #dc3545;
+}
+
+.share-message i {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Fade out animation */
+.share-message.fade-out {
+    animation: fadeOut 0.3s ease-out forwards;
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+}
+
+/* การปรับแต่งสำหรับมือถือ */
+@media (max-width: 768px) {
+    .share-message {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+        font-size: 13px;
+        padding: 10px 15px;
+    }
+    
+    .btn-line-share {
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+}
+
+/* การปรับแต่งสำหรับ Dark Mode */
+@media (prefers-color-scheme: dark) {
+    .share-message.success {
+        background: linear-gradient(135deg, #2d5a2d 0%, #3d6a3d 100%);
+        color: #90ee90;
+        border-left-color: #90ee90;
+    }
+    
+    .share-message.error {
+        background: linear-gradient(135deg, #5a2d2d 0%, #6a3d3d 100%);
+        color: #ffb3b3;
+        border-left-color: #ffb3b3;
+    }
+}
+
+/* สไตล์สำหรับ Tooltip */
+.share-tooltip {
+    position: relative;
+}
+
+.share-tooltip::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.8);
+    color: white;
+    padding: 6px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    margin-bottom: 5px;
+}
+
+.share-tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: rgba(0,0,0,0.8);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.share-tooltip:hover::before,
+.share-tooltip:hover::after {
+    opacity: 1;
+}
+
+/* ปุ่มแชร์แบบ Floating Action Button */
+.share-fab {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #06C755 0%, #05B050 100%);
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(6, 199, 85, 0.4);
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.share-fab:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(6, 199, 85, 0.5);
+}
+
+.share-fab:active {
+    transform: scale(1.05);
+}
+
+.share-fab.pulse {
+    animation: fabPulse 2s infinite;
+}
+
+@keyframes fabPulse {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 4px 12px rgba(6, 199, 85, 0.4);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 6px 16px rgba(6, 199, 85, 0.6);
+    }
+}
+
+/* Share Progress Indicator */
+.share-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: rgba(6, 199, 85, 0.2);
+    z-index: 9999;
+    overflow: hidden;
+}
+
+.share-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #06C755, #05B050);
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.share-progress.active .share-progress-bar {
+    animation: progressSlide 2s ease-in-out;
+}
+
+@keyframes progressSlide {
+    0% { width: 0%; }
+    50% { width: 70%; }
+    100% { width: 100%; }
+}
+
+/* Share Statistics Card */
+.share-stats-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.share-stats-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.share-stats-item:last-child {
+    border-bottom: none;
+}
+
+.share-stats-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    font-size: 18px;
+    color: white;
+}
+
+.share-stats-icon.shares {
+    background: linear-gradient(135deg, #06C755 0%, #05B050 100%);
+}
+
+.share-stats-icon.distance {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+}
+
+.share-stats-icon.students {
+    background: linear-gradient(135deg, #ffc107 0%, #e0a800 100%);
+}
+
+.share-stats-content {
+    flex: 1;
+}
+
+.share-stats-value {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1;
+    margin-bottom: 4px;
+}
+
+.share-stats-label {
+    font-size: 14px;
+    color: #6c757d;
+}
+
+/* การพิมพ์ - ซ่อนปุ่มแชร์ */
+@media print {
+    .share-fab,
+    .share-message,
+    .share-progress,
+    .btn-line-share,
+    .share-tooltip,
+    .share-stats-card {
+        display: none !important;
+    }
+}

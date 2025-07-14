@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>สารสนเทศเยี่ยมบ้านนักเรียน</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Prompt&family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" integrity="sha512-1sCRPdkRXhBV2PBLUdRb4tMg1w2YPf37qatUFeS7zlBy7jJI8Lf4VHwWfZZfpXtYSLy85pkm9GaYVYMfw5BC1A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-table@1.20.0/dist/bootstrap-table.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.bootstrap5.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="https://raw.githubusercontent.com/infobwd/STUDENT-CARE/main/icons8-information-96.png" type="image/x-icon"> <!-- Update with the path to your favicon -->
+    <script src="https://cdn.lordicon.com/lordicon.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.7.13/lottie.min.js"></script>
+</head>
+<body style="font-family: 'Google Sans', sans-serif;">
+<!-- Nav Section -->
+<nav class="navbar navbar-expand-lg navbar-custom">
+    <div class="container">
+        <a class="navbar-brand" href="https://student-carewd.glitch.me/">
+            <img src="https://raw.githubusercontent.com/infobwd/STUDENT-CARE/main/icons8-information-96.png" alt="Logo" width="30" height="30" class="d-inline-block align-top"> สารสนเทศเยี่ยมบ้านนักเรียน
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        เมนู
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownMenuLink">
+                            <li><a class="dropdown-item" href="index.html"><i class="fas fa-house-user"></i> ข้อมูลเยี่ยมบ้าน และ สถานะครอบครัว</a></li>
+                            <li><a class="dropdown-item" href="residence.html"><i class="fas fa-home"></i> ข้อมูลการอยู่อาศัย</a></li>
+                            <li><a class="dropdown-item" href="floorMaterial.html"><i class="fas fa-hammer"></i> วัสดุที่ใช้ทำบ้าน</a></li>
+                            <li><a class="dropdown-item" href="electricity.html"><i class="fas fa-lightbulb"></i> แหล่งน้ำดื่ม|แหล่งไฟฟ้า</a></li>
+                            <li><a class="dropdown-item" href="land.html"><i class="fas fa-tractor"></i> ที่ดินทำการเกษตร และ ยานพาหนะ</a></li>
+                            <li><a class="dropdown-item" href="occupations.html"><i class="fas fa-briefcase"></i> อาชีพผู้ปกครองและรายได้</a></li>
+                    </ul>
+                </li>
+            </ul>
+            <form class="d-flex flex-fill" role="search" action="search.html" method="get">
+                <input class="form-control me-2" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="ค้นหาโดยรหัสนักเรียน" aria-label="Search" id="studentIdSearch" name="studentId">
+                <button class="btn btn-outline-light me-2" type="submit">ค้นหา</button>
+            </form>
+            <button id="fullscreenButton" class="btn btn-outline-light me-2">ขยายเต็มจอ</button>
+            <button id="fontSizeButton" class="btn btn-outline-light me-2">ก</button>
+            <button id="login-button" class="btn btn-primary"><i class="fab fa-line"></i> LINE Login</button>
+        </div>
+    </div>
+</nav>
+<br>
+<div id="content-section" class="container mt-5" style="margin-top: 70px;">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
+    <div class="text-start order-2 order-md-1">
+        <span id="currentDateTime" class="currentDateTime"></span>
+    </div>
+    <div class="text-end order-1 order-md-2">
+        <img id="profile-picture" src="" alt="Profile Picture" class="rounded-circle" width="50" height="50" style="display: none;">
+        <span id="profile-name" class="ms-2"></span>
+        <button id="logout-button" class="btn btn-secondary ms-2" style="display: none;">Logout</button>
+        <button id="share-button" class="btn btn-success ms-2" style="display: none;"><i class="fab fa-line"></i> Share</button>
+        <span id="occupationTotal" style="display: none;"></span>
+    </div>
+</div>
+ <h2>เลือกภาคเรียนที่</h2>
+ <select id="semesterDropdown" class="form-control mb-4"></select>
+ 
+ <!-- ข้อมูลที่ดินทำการเกษตร -->
+<h2>ข้อมูลที่ดินทำการเกษตร</h2>
+<ul class="box-info">
+    <li>
+        <img src="https://cdn-icons-png.flaticon.com/512/12401/12401314.png" style="width: 80px; height: 80px;" alt="ไม่ทำเกษตร">
+        <span class="text">
+            <p>ไม่ทำเกษตร</p>
+            <h3 id="landDataA">0 <span style="font-size: 12px">(ครอบครัว)</span></h3>
+            <p><span id="landPercentA">0%</span></p>
+        </span>
+    </li>
+    <li>
+        <img src="https://cdn-icons-png.flaticon.com/512/5863/5863526.png" style="width: 80px; height: 80px;" alt="ทำเกษตร">
+        <span class="text">
+            <p>ทำเกษตร</p>
+            <h3 id="landDataB">0 <span style="font-size: 12px">(ครอบครัว)</span></h3>
+            <p><span id="landPercentB">0%</span></p>
+        </span>
+    </li>
+    <li>
+        <img src="https://cdn-icons-png.flaticon.com/512/1891/1891085.png" style="width: 80px; height: 80px;" alt="ที่ดินน้อยกว่า 1 ไร่">
+        <span class="text">
+            <p>ที่ดินน้อยกว่า 1 ไร่</p>
+            <h3 id="landDataC">0 <span style="font-size: 12px">(ครอบครัว)</span></h3>
+            <p><span id="landPercentC">0%</span></p>
+        </span>
+    </li>
+    <li>
+        <img src="https://cdn-icons-png.flaticon.com/512/15875/15875662.png" style="width: 80px; height: 80px;" alt="ที่ดิน 1 ถึง 5 ไร่">
+        <span class="text">
+            <p>ที่ดิน 1 ถึง 5 ไร่</p>
+            <h3 id="landDataD">0 <span style="font-size: 12px">(ครอบครัว)</span></h3>
+            <p><span id="landPercentD">0%</span></p>
+        </span>
+    </li>
+    <li>
+        <img src="https://cdn-icons-png.flaticon.com/512/2191/2191460.png" style="width: 80px; height: 80px;" alt="ที่ดินมากกว่า 5 ไร่">
+        <span class="text">
+            <p>ที่ดินมากกว่า 5 ไร่</p>
+            <h3 id="landDataE">0 <span style="font-size: 12px">(ครอบครัว)</span></h3>
+            <p><span id="landPercentE">0%</span></p>
+        </span>
+    </li>
+    <li>
+        <img src="https://cdn-icons-png.flaticon.com/512/3177/3177441.png" style="width: 80px; height: 80px;" alt="รวมข้อมูลที่ดิน">
+        <span class="text">
+            <p>รวมข้อมูลที่ดิน</p>
+            <h3 id="landDataF">0 <span style="font-size: 12px">(ครอบครัว)</span></h3>
+<!--             <p><span id="landPercentF">0%</span></p> -->
+        </span>
+    </li>
+</ul>
+<!-- ข้อมูลยานพาหนะ -->
+<h2>ข้อมูลยานพาหนะ</h2>
+<ul class="box-info">
+    <li>
+        <img src="https://cdn-icons-png.flaticon.com/512/715/715914.png" style="width: 80px; height: 80px;" alt="รถยนต์นั่งส่วนตัว ไม่เกิน 15 ปี">
+        <span class="text">
+            <p>รถยนต์นั่งส่วนตัว ไม่เกิน 15 ปี</p>
+            <h3 id="vehicleDataA">0 <span style="font-size: 12px">(ครอบครัว)</span></h3>
+            <p><span id="vehiclePercentA">0%</span></p>
+        </span>
+    </li>
+    <li>
+        <img src="https://cdn-icons-png.flaticon.com/512/7800/7800531.png" style="width: 80px; height: 80px;" alt="รถยนต์นั่งส่วนตัว เกิน 15 ปี">
+        <span class="text">
+            <p>รถยนต์นั่งส่วนตัว เกิน 15 ปี</p>
+            <h3 id="vehicleDataB">0 <span style="font-size: 12px">(ครอบครัว)</span></h3>
+            <p><span id="vehiclePercentB">0%</span></p>
+        </span>
+    </li>
+    <li>
+        <img src="https://cdn-icons-png.flaticon.com/512/9017/9017605.png" style="width: 80px; height: 80px;" alt="รถปิกอัพ/รถบรรทุกเล็ก/รถตู้ ไม่เกิน 15 ปี">
+        <span class="text">
+            <p>รถปิกอัพ/รถบรรทุกเล็ก/รถตู้ ไม่เกิน 15 ปี</p>
+            <h3 id="vehicleDataC">0 <span style="font-size: 12px">(ครอบครัว)</span></h3>
+            <p><span id="vehiclePercentC">0%</span></p>
+        </span>
+    </li>
+    <li>
+        <img src="https://cdn-icons-png.flaticon.com/512/1048/1048327.png" style="width: 80px; height: 80px;" alt="รถปิกอัพ/รถบรรทุกเล็ก/รถตู้ เกิน 15 ปี">
+        <span class="text">
+            <p>รถปิกอัพ/รถบรรทุกเล็ก/รถตู้ เกิน 15 ปี</p>
+            <h3 id="vehicleDataD">0 <span style="font-size: 12px">(ครอบครัว)</span></h3>
+            <p><span id="vehiclePercentD">0%</span></p>
+        </span>
+    </li>
+    <li>
+        <img src="https://cdn-icons-png.flaticon.com/512/2548/2548758.png" style="width: 80px; height: 80px;" alt="รถไถ/รถเกี่ยวข้าว/รถประเภทเดียวกัน ไม่เกิน 15 ปี">
+        <span class="text">
+            <p>รถไถ/รถเกี่ยวข้าว/รถประเภทเดียวกัน ไม่เกิน 15 ปี</p>
+            <h3 id="vehicleDataE">0 <span style="font-size: 12px">(ครอบครัว)</span></h3>
+            <p><span id="vehiclePercentE">0%</span></p>
+        </span>
+    </li>
+    <li>
+        <img src="https://cdn-icons-png.flaticon.com/512/2826/2826092.png" style="width: 80px; height: 80px;" alt="รถไถ/รถเกี่ยวข้าว/รถประเภทเดียวกัน เกิน 15 ปี">
+        <span class="text">
+            <p>รถไถ/รถเกี่ยวข้าว/รถประเภทเดียวกัน เกิน 15 ปี</p>
+            <h3 id="vehicleDataF">0 <span style="font-size: 12px">(ครอบครัว)</span></h3>
+            <p><span id="vehiclePercentF">0%</span></p>
+        </span>
+    </li>
+</ul>
+<ul class="box-info">
+    <li>
+        <img src="https://cdn-icons-png.flaticon.com/512/8939/8939904.png" style="width: 80px; height: 80px;" alt="มีรถมอเตอร์/เรือประมงพื้นบ้าน(ขนาดเล็ก)">
+        <span class="text">
+            <p>มีรถมอเตอร์/เรือประมงพื้นบ้าน(ขนาดเล็ก)</p>
+            <h3 id="vehicleDataG">0 <span style="font-size: 12px">(ครอบครัว)</span></h3>
+            <p><span id="vehiclePercentG">0%</span></p>
+        </span>
+    </li>
+    <li>
+        <img src="https://cdn-icons-png.flaticon.com/512/9561/9561688.png" style="width: 80px; height: 80px;" alt="ไม่มีรถมอเตอร์/เรือประมงพื้นบ้าน(ขนาดเล็ก)">
+        <span class="text">
+            <p>ไม่มีรถมอเตอร์/เรือประมงพื้นบ้าน(ขนาดเล็ก)</p>
+            <h3 id="vehicleDataH">0 <span style="font-size: 12px">(ครอบครัว)</span></h3>
+            <p><span id="vehiclePercentH">0%</span></p>
+        </span>
+    </li>
+    <li>
+        <img src="https://cdn-icons-png.flaticon.com/512/3418/3418138.png" style="width: 80px; height: 80px;" alt="มียานพาหนะในครัวเรือน">
+        <span class="text">
+            <p>มียานพาหนะในครัวเรือน</p>
+            <h3 id="vehicleDataI">0 <span style="font-size: 12px">(ครอบครัว)</span></h3>
+            <p><span id="vehiclePercentI">0%</span></p>
+        </span>
+    </li>
+    <li>
+        <img src="https://cdn-icons-png.flaticon.com/512/1898/1898833.png" style="width: 80px; height: 80px;" alt="ไม่มียานพาหนะในครัวเรือน">
+        <span class="text">
+            <p>ไม่มียานพาหนะในครัวเรือน</p>
+            <h3 id="vehicleDataJ">0 <span style="font-size: 12px">(ครอบครัว)</span></h3>
+            <p><span id="vehiclePercentJ">0%</span></p>
+        </span>
+    </li>
+</ul>
+<!--   สิ้นสุดข้อมูลยานพาหนะ -->
+    <div class="mb-3 marquee">
+        <div><span id="newsTicker"></span></div>
+        <a href="news.html" class="news-button">อ่านข่าวทั้งหมด</a>
+    </div>
+</div><br>
+<!-- Footer Section -->
+<div id="footer-section">
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3 mb-4">
+                    <h5>Address</h5>
+                    <p>โรงเรียนบ้านวังด้ง 111 หมู่ 11 ตำบลหนองกุ่ม อำเภอบ่อพลอย จังหวัดกาญจนบุรี รหัสไปรษณีย์ 71160</p>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <h5>Contact Us</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="mailto:info@bwd.ac.th"><i class="fa fa-envelope"></i> info@bwd.ac.th</a></li>
+                        <li><a href="tel:+66836645989"><i class="fa fa-phone"></i> 083-664-5989 [ผอ.นพรุจ]</a></li>
+                        <li><a href="tel:+66655066852"><i class="fa fa-phone"></i> 065-506-6852 [คุณครูหทัยชนก]</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <h5>Social Media</h5>
+                    <ul class="list-unstyled list-inline">
+                        <li class="list-inline-item">
+                            <a href="#" class="btn btn-social"><i class="fab fa-facebook-f"></i></a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="#" class="btn btn-social"><i class="fab fa-youtube"></i></a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="#" class="btn btn-social"><i class="fab fa-instagram"></i></a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="#" class="btn btn-social"><i class="fab fa-tiktok"></i></a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <h5>Follow Us</h5>
+                    <img src="https://raw.githubusercontent.com/infobwd/wdconnect/main/M_747spikt_GW.png" alt="QR Code" width="100" height="100" class="mb-2">
+                </div>
+            </div>
+        </div>
+    </footer>
+    <div class="footer-bottom">
+        <div class="container">
+            <p>&copy; 2024 โรงเรียนบ้านวังด้ง. All Rights Reserved.</p>
+        </div>
+    </div>
+</div>
+<!-- Chat Button -->
+<button onclick="chatFunction()" id="chatBtn" title="Chat with us"><i class="fa fa-comments"></i></button>
+<!-- Search Popup Modal -->
+<div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="searchModalLabel">Search</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>ค้นหานักเรียนรหัส: <span id="searchedStudentId"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Search</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#login-button').click(function() {
+            liff.login();
+        });
+
+        $('#logout-button').click(function() {
+            logout();
+        });
+
+        $('#share-button').click(function() {
+            shareData();
+        });
+
+        $('#fullscreenButton').click(function() {
+            toggleFullscreen();
+        });
+
+        $('#fontSizeButton').click(function() {
+            toggleFontSize();
+        });
+
+        initializeLiff();
+        loadLandData();
+        loadVehicleData();
+        loadNewsData();
+
+        setInterval(function() {
+            loadLandData($('#semesterDropdown').val());
+            loadVehicleData($('#semesterDropdown').val());
+        }, 30000); // Reload data every 30 seconds
+
+        updateDateTime();
+        setInterval(updateDateTime, 1000); // Update date and time every second
+    });
+
+    async function initializeLiff() {
+        try {
+            await liff.init({ liffId: '2005494853-ZDznGqqe' });
+            if (liff.isLoggedIn()) {
+                displayUserInfo();
+                $('#login-button').hide(); // Hide login button after login
+            }
+        } catch (error) {
+            console.error('LIFF initialization failed', error);
+        }
+    }
+
+    async function displayUserInfo() {
+        const profile = await liff.getProfile();
+        $('#profile-name').text(profile.displayName);
+        $('#profile-picture').attr('src', profile.pictureUrl).show();
+        $('#logout-button').show();
+        $('#share-button').show();
+    }
+
+    function loadLandData(semester) {
+        fetch('https://opensheet.elk.sh/1EZtfvb0h9wYZbRFTGcm0KVPScnyu6B-boFG6aMpWEUo/ที่ดินทำการเกษตรได้(รวมเช่า)')
+            .then(response => response.json())
+            .then(data => {
+                const selectedData = data.find(item => item['ปีการศึกษา'] === semester);
+                if (!selectedData) return;
+
+                const totalFamilies = parseInt(selectedData['รวมจำนวน'].replace(/,/g, ''));
+
+                const landA = parseInt(selectedData['ไม่ทำเกษตร'].replace(/,/g, ''));
+                const landB = parseInt(selectedData['ทำเกษตร'].replace(/,/g, ''));
+                const landC = parseInt(selectedData['มีที่ดินน้อยกว่า ๑ ไร่'].replace(/,/g, ''));
+                const landD = parseInt(selectedData['มีที่ดิน ๑ ถึง ๕ ไร่'].replace(/,/g, ''));
+                const landE = parseInt(selectedData['มีที่ดินมากกว่า 5 ไร่'].replace(/,/g, ''));
+                const landF = totalFamilies;
+
+                const landPercentA = ((landA / totalFamilies) * 100).toFixed(2);
+                const landPercentB = ((landB / totalFamilies) * 100).toFixed(2);
+                const landPercentC = ((landC / totalFamilies) * 100).toFixed(2);
+                const landPercentD = ((landD / totalFamilies) * 100).toFixed(2);
+                const landPercentE = ((landE / totalFamilies) * 100).toFixed(2);
+                const landPercentF = 100;
+
+                document.getElementById('landDataA').innerText = `${landA} (ครอบครัว)`;
+                document.getElementById('landPercentA').innerText = `${landPercentA}%`;
+                document.getElementById('landDataB').innerText = `${landB} (ครอบครัว)`;
+                document.getElementById('landPercentB').innerText = `${landPercentB}%`;
+                document.getElementById('landDataC').innerText = `${landC} (ครอบครัว)`;
+                document.getElementById('landPercentC').innerText = `${landPercentC}%`;
+                document.getElementById('landDataD').innerText = `${landD} (ครอบครัว)`;
+                document.getElementById('landPercentD').innerText = `${landPercentD}%`;
+                document.getElementById('landDataE').innerText = `${landE} (ครอบครัว)`;
+                document.getElementById('landPercentE').innerText = `${landPercentE}%`;
+                document.getElementById('landDataF').innerText = `${landF} (ครอบครัว)`;
+                document.getElementById('landPercentF').innerText = `${landPercentF}%`;
+            });
+    }
+
+    function loadVehicleData(semester) {
+        fetch('https://opensheet.elk.sh/1EZtfvb0h9wYZbRFTGcm0KVPScnyu6B-boFG6aMpWEUo/ยานพาหนะ')
+            .then(response => response.json())
+            .then(data => {
+                const selectedData = data.find(item => item['ปีการศึกษา'] === semester);
+                if (!selectedData) return;
+
+                const totalFamilies = parseInt(selectedData['รวมมีและไม่มี'].replace(/,/g, ''));
+
+                const vehicleA = parseInt(selectedData['รถยนต์นั่งส่วนตัว ไม่เกิน 15 ปี'].replace(/,/g, ''));
+                const vehicleB = parseInt(selectedData['รถยนต์นั่งส่วนตัว เกิน 15 ปี'].replace(/,/g, ''));
+                const vehicleC = parseInt(selectedData['รถปิกอัพ/รถบรรทุกเล็ก/รถตู้ ไม่เกิน 15 ปี'].replace(/,/g, ''));
+                const vehicleD = parseInt(selectedData['รถปิกอัพ/รถบรรทุกเล็ก/รถตู้ เกิน 15 ปี'].replace(/,/g, ''));
+                const vehicleE = parseInt(selectedData['รถไถ/รถเกี่ยวข้าว/รถประเภทเดียวกัน ไม่เกิน 15 ปี'].replace(/,/g, ''));
+                const vehicleF = parseInt(selectedData['รถไถ/รถเกี่ยวข้าว/รถประเภทเดียวกัน เกิน 15 ปี'].replace(/,/g, ''));
+                const vehicleG = parseInt(selectedData['มีรถมอเตอร์/เรือประมงพื้นบ้าน(ขนาดเล็ก)'].replace(/,/g, ''));
+                const vehicleH = parseInt(selectedData['ไม่มีรถมอเตอร์/เรือประมงพื้นบ้าน(ขนาดเล็ก)'].replace(/,/g, ''));
+                const vehicleI = parseInt(selectedData['มียานพาหนะในครัวเรือน'].replace(/,/g, ''));
+                const vehicleJ = parseInt(selectedData['ไม่มียานพาหนะในครัวเรือน'].replace(/,/g, ''));
+
+                const vehiclePercentA = ((vehicleA / totalFamilies) * 100).toFixed(2);
+                const vehiclePercentB = ((vehicleB / totalFamilies) * 100).toFixed(2);
+                const vehiclePercentC = ((vehicleC / totalFamilies) * 100).toFixed(2);
+                const vehiclePercentD = ((vehicleD / totalFamilies) * 100).toFixed(2);
+                const vehiclePercentE = ((vehicleE / totalFamilies) * 100).toFixed(2);
+                const vehiclePercentF = ((vehicleF / totalFamilies) * 100).toFixed(2);
+                const vehiclePercentG = ((vehicleG / totalFamilies) * 100).toFixed(2);
+                const vehiclePercentH = ((vehicleH / totalFamilies) * 100).toFixed(2);
+                const vehiclePercentI = ((vehicleI / totalFamilies) * 100).toFixed(2);
+                const vehiclePercentJ = ((vehicleJ / totalFamilies) * 100).toFixed(2);
+
+                document.getElementById('vehicleDataA').innerText = `${vehicleA} (ครอบครัว)`;
+                document.getElementById('vehiclePercentA').innerText = `${vehiclePercentA}%`;
+                document.getElementById('vehicleDataB').innerText = `${vehicleB} (ครอบครัว)`;
+                document.getElementById('vehiclePercentB').innerText = `${vehiclePercentB}%`;
+                document.getElementById('vehicleDataC').innerText = `${vehicleC} (ครอบครัว)`;
+                document.getElementById('vehiclePercentC').innerText = `${vehiclePercentC}%`;
+                document.getElementById('vehicleDataD').innerText = `${vehicleD} (ครอบครัว)`;
+                document.getElementById('vehiclePercentD').innerText = `${vehiclePercentD}%`;
+                document.getElementById('vehicleDataE').innerText = `${vehicleE} (ครอบครัว)`;
+                document.getElementById('vehiclePercentE').innerText = `${vehiclePercentE}%`;
+                document.getElementById('vehicleDataF').innerText = `${vehicleF} (ครอบครัว)`;
+                document.getElementById('vehiclePercentF').innerText = `${vehiclePercentF}%`;
+                document.getElementById('vehicleDataG').innerText = `${vehicleG} (ครอบครัว)`;
+                document.getElementById('vehiclePercentG').innerText = `${vehiclePercentG}%`;
+                document.getElementById('vehicleDataH').innerText = `${vehicleH} (ครอบครัว)`;
+                document.getElementById('vehiclePercentH').innerText = `${vehiclePercentH}%`;
+                document.getElementById('vehicleDataI').innerText = `${vehicleI} (ครอบครัว)`;
+                document.getElementById('vehiclePercentI').innerText = `${vehiclePercentI}%`;
+                document.getElementById('vehicleDataJ').innerText = `${vehicleJ} (ครอบครัว)`;
+                document.getElementById('vehiclePercentJ').innerText = `${vehiclePercentJ}%`;
+            });
+    }
+
+    function shareData() {
+        const profilePicture = $('#profile-picture').attr('src');
+        const profileName = $('#profile-name').text();
+        const currentDateTime = new Date().toLocaleString('th-TH', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric',
+            weekday: 'long',
+            hour12: false
+        });
+
+        const landDataA = $('#landDataA').text();
+        const landPercentA = $('#landPercentA').text();
+        const landDataB = $('#landDataB').text();
+        const landPercentB = $('#landPercentB').text();
+        const landDataC = $('#landDataC').text();
+        const landPercentC = $('#landPercentC').text();
+        const landDataD = $('#landDataD').text();
+        const landPercentD = $('#landPercentD').text();
+        const landDataE = $('#landDataE').text();
+        const landPercentE = $('#landPercentE').text();
+        const landDataF = $('#landDataF').text();
+        const landPercentF = $('#landPercentF').text();
+
+        const vehicleDataA = $('#vehicleDataA').text();
+        const vehiclePercentA = $('#vehiclePercentA').text();
+        const vehicleDataB = $('#vehicleDataB').text();
+        const vehiclePercentB = $('#vehiclePercentB').text();
+        const vehicleDataC = $('#vehicleDataC').text();
+        const vehiclePercentC = $('#vehiclePercentC').text();
+        const vehicleDataD = $('#vehicleDataD').text();
+        const vehiclePercentD = $('#vehiclePercentD').text();
+        const vehicleDataE = $('#vehicleDataE').text();
+        const vehiclePercentE = $('#vehiclePercentE').text();
+        const vehicleDataF = $('#vehicleDataF').text();
+        const vehiclePercentF = $('#vehiclePercentF').text();
+        const vehicleDataG = $('#vehicleDataG').text();
+        const vehiclePercentG = $('#vehiclePercentG').text();
+        const vehicleDataH = $('#vehicleDataH').text();
+        const vehiclePercentH = $('#vehiclePercentH').text();
+        const vehicleDataI = $('#vehicleDataI').text();
+        const vehiclePercentI = $('#vehiclePercentI').text();
+        const vehicleDataJ = $('#vehicleDataJ').text();
+        const vehiclePercentJ = $('#vehiclePercentJ').text();
+
+        const flexMessage = {
+            type: "flex",
+            altText: "สารสนเทศเยี่ยมบ้านนักเรียน",
+            contents: {
+                type: "bubble",
+                size: "giga",
+                hero: {
+                    type: "image",
+                    url: "https://raw.githubusercontent.com/infobwd/STUDENT-CARE/main/headStudentCare2.png",
+                    size: "full",
+                    aspectRatio: "40:10",
+                    aspectMode: "cover"
+                },
+                body: {
+                    type: "box",
+                    layout: "vertical",
+                    contents: [
+                        {
+                            type: "separator",
+                            margin: "xl"
+                        },
+                        {
+                            type: "box",
+                            layout: "vertical",
+                            margin: "lg",
+                            spacing: "sm",
+                            contents: [
+                                {
+                                    type: "box",
+                                    layout: "baseline",
+                                    spacing: "sm",
+                                    contents: [
+                                        {
+                                            type: "text",
+                                            text: "ปีการศึกษา",
+                                            color: "#aaaaaa",
+                                            size: "sm",
+                                            flex: 5
+                                        },
+                                        {
+                                            type: "text",
+                                            text: $('#semesterDropdown').val(),
+                                            wrap: true,
+                                            color: "#666666",
+                                            size: "sm",
+                                            flex: 5
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "box",
+                                    layout: "baseline",
+                                    spacing: "sm",
+                                    contents: [
+                                        {
+                                            type: "text",
+                                            text: "ที่ดินทำการเกษตร",
+                                            color: "#aaaaaa",
+                                            size: "sm",
+                                            flex: 5
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "box",
+                                    layout: "baseline",
+                                    spacing: "sm",
+                                    contents: [
+                                        {
+                                            type: "text",
+                                            text: "ไม่ทำเกษตร",
+                                            color: "#aaaaaa",
+                                            size: "sm",
+                                            flex: 5
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${landDataA} (${landPercentA})`,
+                                            wrap: true,
+                                            color: "#666666",
+                                            size: "sm",
+                                            flex: 5
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "box",
+                                    layout: "baseline",
+                                    spacing: "sm",
+                                    contents: [
+                                        {
+                                            type: "text",
+                                            text: "ทำเกษตร",
+                                            color: "#aaaaaa",
+                                            size: "sm",
+                                            flex: 5
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${landDataB} (${landPercentB})`,
+                                            wrap: true,
+                                            color: "#666666",
+                                            size: "sm",
+                                            flex: 5
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "box",
+                                    layout: "baseline",
+                                    spacing: "sm",
+                                    contents: [
+                                        {
+                                            type: "text",
+                                            text: "มีที่ดินน้อยกว่า 1 ไร่",
+                                            color: "#aaaaaa",
+                                            size: "sm",
+                                            flex: 5
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${landDataC} (${landPercentC})`,
+                                            wrap: true,
+                                            color: "#666666",
+                                            size: "sm",
+                                            flex: 5
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "box",
+                                    layout: "baseline",
+                                    spacing: "sm",
+                                    contents: [
+                                        {
+                                            type: "text",
+                                            text: "มีที่ดิน 1 ถึง 5 ไร่",
+                                            color: "#aaaaaa",
+                                            size: "sm",
+                                            flex: 5
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${landDataD} (${landPercentD})`,
+                                            wrap: true,
+                                            color: "#666666",
+                                            size: "sm",
+                                            flex: 5
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "box",
+                                    layout: "baseline",
+                                    spacing: "sm",
+                                    contents: [
+                                        {
+                                            type: "text",
+                                            text: "มีที่ดินมากกว่า 5 ไร่",
+                                            color: "#aaaaaa",
+                                            size: "sm",
+                                            flex: 5
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${landDataE} (${landPercentE})`,
+                                            wrap: true,
+                                            color: "#666666",
+                                            size: "sm",
+                                            flex: 5
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "box",
+                                    layout: "baseline",
+                                    spacing: "sm",
+                                    contents: [
+                                        {
+                                            type: "text",
+                                            text: "รวมข้อมูลที่ดิน",
+                                            color: "#aaaaaa",
+                                            size: "sm",
+                                            flex: 5
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${landDataF} (${landPercentF})`,
+                                            wrap: true,
+                                            color: "#666666",
+                                            size: "sm",
+                                            flex: 5
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "box",
+                                    layout: "baseline",
+                                    spacing: "sm",
+                                    contents: [
+                                        {
+                                            type: "text",
+                                            text: "ยานพาหนะ",
+                                            color: "#aaaaaa",
+                                            size: "sm",
+                                            flex: 5
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "box",
+                                    layout: "baseline",
+                                    spacing: "sm",
+                                    contents: [
+                                        {
+                                            type: "text",
+                                            text: "รถยนต์นั่งส่วนตัว ไม่เกิน 15 ปี",
+                                            color: "#aaaaaa",
+                                            size: "sm",
+                                            flex: 5
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${vehicleDataA} (${vehiclePercentA})`,
+                                            wrap: true,
+                                            color: "#666666",
+                                            size: "sm",
+                                            flex: 5
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "box",
+                                    layout: "baseline",
+                                    spacing: "sm",
+                                    contents: [
+                                        {
+                                            type: "text",
+                                            text: "รถยนต์นั่งส่วนตัว เกิน 15 ปี",
+                                            color: "#aaaaaa",
+                                            size: "sm",
+                                            flex: 5
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${vehicleDataB} (${vehiclePercentB})`,
+                                            wrap: true,
+                                            color: "#666666",
+                                            size: "sm",
+                                            flex: 5
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "box",
+                                    layout: "baseline",
+                                    spacing: "sm",
+                                    contents: [
+                                        {
+                                            type: "text",
+                                            text: "รถปิกอัพ/รถบรรทุกเล็ก/รถตู้ ไม่เกิน 15 ปี",
+                                            color: "#aaaaaa",
+                                            size: "sm",
+                                            flex: 5
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${vehicleDataC} (${vehiclePercentC})`,
+                                            wrap: true,
+                                            color: "#666666",
+                                            size: "sm",
+                                            flex: 5
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "box",
+                                    layout: "baseline",
+                                    spacing: "sm",
+                                    contents: [
+                                        {
+                                            type: "text",
+                                            text: "รถปิกอัพ/รถบรรทุกเล็ก/รถตู้ เกิน 15 ปี",
+                                            color: "#aaaaaa",
+                                            size: "sm",
+                                            flex: 5
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${vehicleDataD} (${vehiclePercentD})`,
+                                            wrap: true,
+                                            color: "#666666",
+                                            size: "sm",
+                                            flex: 5
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "box",
+                                    layout: "baseline",
+                                    spacing: "sm",
+                                    contents: [
+                                        {
+                                            type: "text",
+                                            text: "รถไถ/รถเกี่ยวข้าว/รถประเภทเดียวกัน ไม่เกิน 15 ปี",
+                                            color: "#aaaaaa",
+                                            size: "sm",
+                                            flex: 5
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${vehicleDataE} (${vehiclePercentE})`,
+                                            wrap: true,
+                                            color: "#666666",
+                                            size: "sm",
+                                            flex: 5
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "box",
+                                    layout: "baseline",
+                                    spacing: "sm",
+                                    contents: [
+                                        {
+                                            type: "text",
+                                            text: "รถไถ/รถเกี่ยวข้าว/รถประเภทเดียวกัน เกิน 15 ปี",
+                                            color: "#aaaaaa",
+                                            size: "sm",
+                                            flex: 5
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${vehicleDataF} (${vehiclePercentF})`,
+                                            wrap: true,
+                                            color: "#666666",
+                                            size: "sm",
+                                            flex: 5
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "box",
+                                    layout: "baseline",
+                                    spacing: "sm",
+                                    contents: [
+                                        {
+                                            type: "text",
+                                            text: "มีรถมอเตอร์/เรือประมงพื้นบ้าน(ขนาดเล็ก)",
+                                            color: "#aaaaaa",
+                                            size: "sm",
+                                            flex: 5
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${vehicleDataG} (${vehiclePercentG})`,
+                                            wrap: true,
+                                            color: "#666666",
+                                            size: "sm",
+                                            flex: 5
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "box",
+                                    layout: "baseline",
+                                    spacing: "sm",
+                                    contents: [
+                                        {
+                                            type: "text",
+                                            text: "ไม่มีรถมอเตอร์/เรือประมงพื้นบ้าน(ขนาดเล็ก)",
+                                            color: "#aaaaaa",
+                                            size: "sm",
+                                            flex: 5
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${vehicleDataH} (${vehiclePercentH})`,
+                                            wrap: true,
+                                            color: "#666666",
+                                            size: "sm",
+                                            flex: 5
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "box",
+                                    layout: "baseline",
+                                    spacing: "sm",
+                                    contents: [
+                                        {
+                                            type: "text",
+                                            text: "มียานพาหนะในครัวเรือน",
+                                            color: "#aaaaaa",
+                                            size: "sm",
+                                            flex: 5
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${vehicleDataI} (${vehiclePercentI})`,
+                                            wrap: true,
+                                            color: "#666666",
+                                            size: "sm",
+                                            flex: 5
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "box",
+                                    layout: "baseline",
+                                    spacing: "sm",
+                                    contents: [
+                                        {
+                                            type: "text",
+                                            text: "ไม่มียานพาหนะในครัวเรือน",
+                                            color: "#aaaaaa",
+                                            size: "sm",
+                                            flex: 5
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${vehicleDataJ} (${vehiclePercentJ})`,
+                                            wrap: true,
+                                            color: "#666666",
+                                            size: "sm",
+                                            flex: 5
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                footer: {
+                    type: "box",
+                    layout: "vertical",
+                    contents: [
+                        {
+                            type: "separator",
+                            margin: "sm"
+                        },
+                        {
+                            type: "image",
+                            url: profilePicture,
+                            size: "sm",
+                            aspectMode: "cover",
+                            aspectRatio: "1:1",
+                            gravity: "bottom",
+                            margin: "md"
+                        },
+                        {
+                            type: "text",
+                            text: "ข้อมูลโดย : " + profileName,
+                            weight: "bold",
+                            size: "sm",
+                            align: "center"
+                        },
+                        {
+                            type: "text",
+                            text: "ข้อมูล ณ. " + currentDateTime,
+                            size: "xs",
+                            color: "#aaaaaa",
+                            align: "center"
+                        },
+                        {
+                            type: "button",
+                            action: {
+                                type: "uri",
+                                label: "App เยี่ยมบ้าน",
+                                uri: "https://liff.line.me/2005230346-ND61qqrg"
+                            },
+                            style: "primary",
+                            color: "#1DB446",
+                            margin: "md"
+                        },
+                        {
+                            type: "button",
+                            action: {
+                                type: "uri",
+                                label: "View More",
+                                uri: "https://liff.line.me/2005494853-ZDznGqqe"
+                            },
+                            style: "primary",
+                            color: "#1DB446",
+                            margin: "md"
+                        }
+                    ],
+                    spacing: "sm",
+                    paddingTop: "10px"
+                }
+            }
+        };
+
+        liff.shareTargetPicker([flexMessage])
+            .then(() => {
+                liff.closeWindow();
+            })
+            .catch(function (error) {
+                console.error('Error sending message: ', error);
+            });
+    }
+
+    function loadNewsData() {
+        fetch('https://opensheet.elk.sh/1EZtfvb0h9wYZbRFTGcm0KVPScnyu6B-boFG6aMpWEUo/ข่าวประกาศ')
+            .then(response => response.json())
+            .then(data => {
+                let newsHtml = data.map(news => {
+                    let date = news.วันที่.replace(' +0700', ''); // ตัดข้อความ "+0000" ออก
+                    return `📰 <a href="${news.Link}" target="_blank">${news.หัวข้อข่าว}: 📆 (${date})</a>`;
+                }).join(' | ');
+                $('#newsTicker').html(newsHtml);
+            });
+    }
+
+    function showAlertIcons() {
+        $('.alert-icon').show();
+        setTimeout(function() {
+            $('.alert-icon').hide();
+        }, 20000);
+    }
+
+    function logout() {
+        liff.logout();
+        window.location.reload();
+    }
+
+    function chatFunction() {
+        window.open('https://line.me/R/ti/p/@747spikt', '_blank');
+    }
+
+    function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+            $('#fullscreenButton').text('ย่อขนาดจอ');
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+                $('#fullscreenButton').text('ขยายเต็มจอ');
+            }
+        }
+    }
+
+    function toggleFontSize() {
+        let currentSize = parseInt($('body').css('font-size'));
+        if (currentSize === 16) {
+            $('body').css('font-size', '20px');
+        } else if (currentSize === 20) {
+            $('body').css('font-size', '24px');
+        } else {
+            $('body').css('font-size', '16px');
+        }
+    }
+
+    function updateDateTime() {
+        const currentDateTime = new Date().toLocaleString('th-TH', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric',
+            weekday: 'long',
+            hour12: false
+        });
+        $('#currentDateTime').text(currentDateTime);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        populateDropdown();
+
+        document.getElementById('semesterDropdown').addEventListener('change', function() {
+            const selectedSemester = this.value;
+            loadLandData(selectedSemester);
+            loadVehicleData(selectedSemester);
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.navbar-nav') && !e.target.closest('#studentIdSearch')) {
+                var navbarCollapse = document.querySelector('.navbar-collapse');
+                var bsCollapse = bootstrap.Collapse.getInstance(navbarCollapse);
+                if (bsCollapse) bsCollapse.hide();
+            }
+        });
+
+        document.querySelectorAll('.dropdown-toggle').forEach(function(element) {
+            element.addEventListener('click', function(e) {
+                if (window.innerWidth < 992) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.nextElementSibling.classList.toggle('show');
+                }
+            });
+        });
+
+        document.querySelectorAll('.dropdown-item').forEach(function(element) {
+            element.addEventListener('click', function() {
+                var navbarCollapse = document.querySelector('.navbar-collapse');
+                var bsCollapse = bootstrap.Collapse.getInstance(navbarCollapse);
+                if (bsCollapse) bsCollapse.hide();
+            });
+        });
+
+        const inputField = document.getElementById('studentIdSearch');
+        inputField.addEventListener('focus', function() {
+            var navbarCollapse = document.querySelector('.navbar-collapse');
+            var bsCollapse = bootstrap.Collapse.getInstance(navbarCollapse);
+            if (bsCollapse) bsCollapse.show();
+        });
+
+        inputField.addEventListener('blur', function() {
+            setTimeout(() => {
+                if (!inputField.matches(':focus')) {
+                    var navbarCollapse = document.querySelector('.navbar-collapse');
+                    var bsCollapse = bootstrap.Collapse.getInstance(navbarCollapse);
+                    if (bsCollapse) bsCollapse.hide();
+                }
+            }, 200);
+        });
+
+        inputField.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+    });
+
+    function populateDropdown() {
+        fetch('https://opensheet.elk.sh/1EZtfvb0h9wYZbRFTGcm0KVPScnyu6B-boFG6aMpWEUo/ปีการศึกษา')
+            .then(response => response.json())
+            .then(data => {
+                const dropdown = document.getElementById('semesterDropdown');
+                data.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item['ปีการศึกษา'];
+                    option.text = item['ปีการศึกษา'];
+                    dropdown.appendChild(option);
+                });
+
+                // Load data for the first semester by default
+                loadLandData(data[0]['ปีการศึกษา']);
+                loadVehicleData(data[0]['ปีการศึกษา']);
+            });
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,1020 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>สารสนเทศเยี่ยมบ้านนักเรียน</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Prompt&family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.2/css/all.min.css" integrity="sha512-1sCRPdkRXhBV2PBLUdRb4tMg1w2YPf37qatUFeS7zlBy7jJI8Lf4VHwWfZZfpXtYSLy85pkm9GaYVYMfw5BC1A==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-table@1.20.0/dist/bootstrap-table.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.bootstrap5.min.css">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="https://raw.githubusercontent.com/infobwd/STUDENT-CARE/main/icons8-information-96.png" type="image/x-icon"> <!-- Update with the path to your favicon -->
+    <script src="https://cdn.lordicon.com/lordicon.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.7.13/lottie.min.js"></script>
+</head>
+<body style="font-family: 'Google Sans', sans-serif;">
+<!-- Nav Section -->
+<nav class="navbar navbar-expand-lg navbar-custom">
+    <div class="container">
+        <a class="navbar-brand" href="https://student-carewd.glitch.me/">
+            <img src="https://raw.githubusercontent.com/infobwd/STUDENT-CARE/main/icons8-information-96.png" alt="Logo" width="30" height="30" class="d-inline-block align-top"> สารสนเทศเยี่ยมบ้านนักเรียน
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        เมนู
+                    </a>
+                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownMenuLink">
+                            <li><a class="dropdown-item" href="index.html"><i class="fas fa-house-user"></i> ข้อมูลเยี่ยมบ้าน และ สถานะครอบครัว</a></li>
+                            <li><a class="dropdown-item" href="residence.html"><i class="fas fa-home"></i> ข้อมูลการอยู่อาศัย</a></li>
+                            <li><a class="dropdown-item" href="floorMaterial.html"><i class="fas fa-hammer"></i> วัสดุที่ใช้ทำบ้าน</a></li>
+                            <li><a class="dropdown-item" href="electricity.html"><i class="fas fa-lightbulb"></i> แหล่งน้ำดื่ม|แหล่งไฟฟ้า</a></li>
+                            <li><a class="dropdown-item" href="land.html"><i class="fas fa-tractor"></i> ที่ดินทำการเกษตร และ ยานพาหนะ</a></li>
+                            <li><a class="dropdown-item" href="occupations.html"><i class="fas fa-briefcase"></i> อาชีพผู้ปกครองและรายได้</a></li>
+                            <li><a class="dropdown-item" href="map.html"><i class="fas fa-map-marked-alt"></i> แผนที่เยี่ยมบ้าน</a></li>
+                    </ul>
+                </li>
+            </ul>
+            <form class="d-flex flex-fill" role="search" action="search.html" method="get">
+                <input class="form-control me-2" type="text" inputmode="numeric" pattern="[0-9]*" placeholder="ค้นหาโดยรหัสนักเรียน" aria-label="Search" id="studentIdSearch" name="studentId">
+                <button class="btn btn-outline-light me-2" type="submit">ค้นหา</button>
+            </form>
+            <button id="fullscreenButton" class="btn btn-outline-light me-2">ขยายเต็มจอ</button>
+            <button id="fontSizeButton" class="btn btn-outline-light me-2">ก</button>
+            <button id="login-button" class="btn btn-primary"><i class="fab fa-line"></i> LINE Login</button>
+        </div>
+    </div>
+</nav>
+<br>
+<div id="content-section" class="container mt-5" style="margin-top: 70px;">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3">
+    <div class="text-start order-2 order-md-1">
+        <span id="currentDateTime" class="currentDateTime"></span>
+    </div>
+    <div class="text-end order-1 order-md-2">
+        <img id="profile-picture" src="" alt="Profile Picture" class="rounded-circle" width="50" height="50" style="display: none;">
+        <span id="profile-name" class="ms-2"></span>
+        <button id="logout-button" class="btn btn-secondary ms-2" style="display: none;">Logout</button>
+        <button id="share-button" class="btn btn-success ms-2" style="display: none;"><i class="fab fa-line"></i> Share</button>
+        <span id="occupationTotal" style="display: none;"></span>
+    </div>
+</div>
+ <h2>เลือกภาคเรียนที่</h2>
+ <select id="semesterDropdown" class="form-control mb-4"></select>
+ 
+ <!-- ข้อมูลอาชีพผู้ปกครอง -->
+        <h2>อาชีพของผู้ปกครอง</h2>
+        <ul class="box-info">
+            <li>
+                <img src="https://cdn-icons-png.flaticon.com/512/6823/6823086.png" style="width: 80px; height: 80px;" alt="รับจ้างทั่วไป">
+                <span class="text">
+                    <p>รับจ้างทั่วไป</p>
+                    <h3 id="occupationDataA">0 <span class="alert-icon">🚨</span><span style="font-size: 12px">(คน)</span></h3>
+                    <p><span id="occupationPercentA">0%</span></p>
+                </span>
+            </li>
+            <li>
+                <img src="https://cdn-icons-png.flaticon.com/512/2921/2921855.png" style="width: 80px; height: 80px;" alt="การเกษตร">
+                <span class="text">
+                    <p>การเกษตร</p>
+                    <h3 id="occupationDataB">0 <span class="alert-icon">🚨</span><span style="font-size: 12px">(คน)</span></h3>
+                    <p><span id="occupationPercentB">0%</span></p>
+                </span>
+            </li>
+            <li>
+                <img src="https://cdn-icons-png.flaticon.com/512/1370/1370169.png" style="width: 80px; height: 80px;" alt="ธุรกิจส่วนตัว">
+                <span class="text">
+                    <p>ธุรกิจส่วนตัว</p>
+                    <h3 id="occupationDataC">0 <span class="alert-icon">🚨</span><span style="font-size: 12px">(คน)</span></h3>
+                    <p><span id="occupationPercentC">0%</span></p>
+                </span>
+            </li>
+            <li>
+                <img src="https://cdn-icons-png.flaticon.com/512/8566/8566634.png" style="width: 80px; height: 80px;" alt="รัฐวิสาหกิจ">
+                <span class="text">
+                    <p>รัฐวิสาหกิจ</p>
+                    <h3 id="occupationDataD">0 <span class="alert-icon">🚨</span><span style="font-size: 12px">(คน)</span></h3>
+                    <p><span id="occupationPercentD">0%</span></p>
+                </span>
+            </li>
+            <li>
+                <img src="https://cdn-icons-png.flaticon.com/512/1425/1425438.png" style="width: 80px; height: 80px;" alt="ข้าราชการ">
+                <span class="text">
+                    <p>ข้าราชการ</p>
+                    <h3 id="occupationDataE">0 <span class="alert-icon">🚨</span><span style="font-size: 12px">(คน)</span></h3>
+                    <p><span id="occupationPercentE">0%</span></p>
+                </span>
+            </li>
+        </ul>
+
+        <ul class="box-info">
+            <li>
+                <img src="https://cdn-icons-png.flaticon.com/512/3361/3361190.png" style="width: 80px; height: 80px;" alt="ค้าขาย">
+                <span class="text">
+                    <p>ค้าขาย</p>
+                    <h3 id="occupationDataF">0 <span class="alert-icon">🚨</span><span style="font-size: 12px">(คน)</span></h3>
+                    <p><span id="occupationPercentF">0%</span></p>
+                </span>
+            </li>
+            <li>
+                <img src="https://cdn-icons-png.flaticon.com/512/3271/3271001.png" style="width: 80px; height: 80px;" alt="อาชีพอิสระ">
+                <span class="text">
+                    <p>อาชีพอิสระ</p>
+                    <h3 id="occupationDataG">0 <span class="alert-icon">🚨</span><span style="font-size: 12px">(คน)</span></h3>
+                    <p><span id="occupationPercentG">0%</span></p>
+                </span>
+            </li>
+            <li>
+                <img src="https://cdn-icons-png.flaticon.com/512/512/512142.png" style="width: 80px; height: 80px;" alt="อื่น ๆ">
+                <span class="text">
+                    <p>อื่น ๆ</p>
+                    <h3 id="occupationDataH">0 <span class="alert-icon">🚨</span><span style="font-size: 12px">(คน)</span></h3>
+                    <p><span id="occupationPercentH">0%</span></p>
+                </span>
+            </li>
+            <li>
+                <img src="https://cdn-icons-png.flaticon.com/512/2190/2190577.png" style="width: 80px; height: 80px;" alt="ไม่มีอาชีพ">
+                <span class="text">
+                    <p>ไม่มีอาชีพ</p>
+                    <h3 id="occupationDataI">0 <span class="alert-icon">🚨</span><span style="font-size: 12px">(คน)</span></h3>
+                    <p><span id="occupationPercentI">0%</span></p>
+                </span>
+            </li>
+        </ul>
+        <!--   สิ้นสุดข้อมูลอาชีพผู้ปกครอง -->
+<!-- เริ่มรายได้เฉลี่ย -->
+   <div class="container mt-5">
+        <div id="income-section">
+            <h2>รายได้แบ่งตามช่วงของแต่ละครอบครัว</h2>
+            <ul class="box-info">
+                <li>
+                    <span class="text">
+                        <p>ต่ำกว่า 3,000 บาท</p>
+                        <h3 id="incomeDataA">0 <span style="font-size: 12px">(ครอบครัว)</span></h3>
+                        <p><span id="incomePercentA">0%</span></p>
+                    </span>
+                </li>
+                <li>
+                    <span class="text">
+                        <p>3,000 ถึง 5,000 บาท</p>
+                        <h3 id="incomeDataB">0 <span style="font-size: 12px">(ครอบครัว)</span></h3>
+                        <p><span id="incomePercentB">0%</span></p>
+                    </span>
+                </li>
+                <li>
+                    <span class="text">
+                        <p>5,001 ถึง 8,000 บาท</p>
+                        <h3 id="incomeDataC">0 <span style="font-size: 12px">(ครอบครัว)</span></h3>
+                        <p><span id="incomePercentC">0%</span></p>
+                    </span>
+                </li>
+                <li>
+                    <span class="text">
+                        <p>8,001 ถึง 11,000 บาท</p>
+                        <h3 id="incomeDataD">0 <span style="font-size: 12px">(ครอบครัว)</span></h3>
+                        <p><span id="incomePercentD">0%</span></p>
+                    </span>
+                </li>
+                <li>
+                    <span class="text">
+                        <p>11,001 ถึง 14,000 บาท</p>
+                        <h3 id="incomeDataE">0 <span style="font-size: 12px">(ครอบครัว)</span></h3>
+                        <p><span id="incomePercentE">0%</span></p>
+                    </span>
+                </li>
+                <li>
+                    <span class="text">
+                        <p>14,001 ถึง 17,000 บาท</p>
+                        <h3 id="incomeDataF">0 <span style="font-size: 12px">(ครอบครัว)</span></h3>
+                        <p><span id="incomePercentF">0%</span></p>
+                    </span>
+                </li>
+                <li>
+                    <span class="text">
+                        <p>17,001 ถึง 20,000 บาท</p>
+                        <h3 id="incomeDataG">0 <span style="font-size: 12px">(ครอบครัว)</span></h3>
+                        <p><span id="incomePercentG">0%</span></p>
+                    </span>
+                </li>
+                <li>
+                    <span class="text">
+                        <p>มากกว่า 20,001 ขึ้นไป</p>
+                        <h3 id="incomeDataH">0 <span style="font-size: 12px">(ครอบครัว)</span></h3>
+                        <p><span id="incomePercentH">0%</span></p>
+                    </span>
+                </li>
+                <li>
+                    <span class="text">
+                        <p>รายได้เฉลี่ยรวม</p>
+                        <h3 id="averageIncomeData">0</h3>
+                        <p id="averageIncomeChange">0</p>
+                    </span>
+                </li>
+            </ul>
+        </div>
+    </div>
+<!-- จบรายได้เฉลี่ย -->
+    <div class="mb-3 marquee">
+        <div><span id="newsTicker"></span></div>
+        <a href="news.html" class="news-button">อ่านข่าวทั้งหมด</a>
+    </div>
+</div><br>
+<!-- Footer Section -->
+<div id="footer-section">
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-3 mb-4">
+                    <h5>Address</h5>
+                    <p>โรงเรียนบ้านวังด้ง 111 หมู่ 11 ตำบลหนองกุ่ม อำเภอบ่อพลอย จังหวัดกาญจนบุรี รหัสไปรษณีย์ 71160</p>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <h5>Contact Us</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="mailto:info@bwd.ac.th"><i class="fa fa-envelope"></i> info@bwd.ac.th</a></li>
+                        <li><a href="tel:+66836645989"><i class="fa fa-phone"></i> 083-664-5989 [ผอ.นพรุจ]</a></li>
+                        <li><a href="tel:+66655066852"><i class="fa fa-phone"></i> 065-506-6852 [คุณครูหทัยชนก]</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <h5>Social Media</h5>
+                    <ul class="list-unstyled list-inline">
+                        <li class="list-inline-item">
+                            <a href="#" class="btn btn-social"><i class="fab fa-facebook-f"></i></a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="#" class="btn btn-social"><i class="fab fa-youtube"></i></a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="#" class="btn btn-social"><i class="fab fa-instagram"></i></a>
+                        </li>
+                        <li class="list-inline-item">
+                            <a href="#" class="btn btn-social"><i class="fab fa-tiktok"></i></a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <h5>Follow Us</h5>
+                    <img src="https://raw.githubusercontent.com/infobwd/wdconnect/main/M_747spikt_GW.png" alt="QR Code" width="100" height="100" class="mb-2">
+                </div>
+            </div>
+        </div>
+    </footer>
+    <div class="footer-bottom">
+        <div class="container">
+            <p>&copy; 2024 โรงเรียนบ้านวังด้ง. All Rights Reserved.</p>
+        </div>
+    </div>
+</div>
+<!-- Chat Button -->
+<button onclick="chatFunction()" id="chatBtn" title="Chat with us"><i class="fa fa-comments"></i></button>
+<!-- Search Popup Modal -->
+<div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="searchModalLabel">Search</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>ค้นหานักเรียนรหัส: <span id="searchedStudentId"></span></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Search</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+<script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/pdfmake.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.36/vfs_fonts.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#login-button').click(function() {
+            liff.login();
+        });
+
+        $('#logout-button').click(function() {
+            logout();
+        });
+
+        $('#share-button').click(function() {
+            shareData();
+        });
+
+        $('#fullscreenButton').click(function() {
+            toggleFullscreen();
+        });
+
+        $('#fontSizeButton').click(function() {
+            toggleFontSize();
+        });
+
+        initializeLiff();
+        loadOccupationData();
+        loadNewsData();
+        loadIncomeData();
+
+        setInterval(function() {
+            loadOccupationData($('#semesterDropdown').val());
+            loadIncomeData($('#semesterDropdown').val());
+        }, 30000); // Reload data every 30 seconds
+
+        updateDateTime();
+        setInterval(updateDateTime, 1000); // Update date and time every second
+    });
+
+    async function initializeLiff() {
+        try {
+            await liff.init({ liffId: '2005494853-ZDznGqqe' });
+            if (liff.isLoggedIn()) {
+                displayUserInfo();
+                $('#login-button').hide(); // Hide login button after login
+            }
+        } catch (error) {
+            console.error('LIFF initialization failed', error);
+        }
+    }
+
+    async function displayUserInfo() {
+        const profile = await liff.getProfile();
+        $('#profile-name').text(profile.displayName);
+        $('#profile-picture').attr('src', profile.pictureUrl).show();
+        $('#logout-button').show();
+        $('#share-button').show();
+    }
+
+     function loadOccupationData(semester) {
+        fetch('https://opensheet.elk.sh/1EZtfvb0h9wYZbRFTGcm0KVPScnyu6B-boFG6aMpWEUo/อาชีพของผู้ปกครอง')
+            .then(response => response.json())
+            .then(data => {
+                console.log(data);
+
+                // Find the data for the selected semester
+                const selectedData = data.find(item => item['ปีการศึกษา'] === semester);
+                if (!selectedData) return;
+
+                const totalStudents = parseInt(selectedData['รวม'].replace(/,/g, ''));
+                
+         
+                
+                // (existing code continues here...)
+                const occupationA = parseInt(selectedData['รับจ้างทั่วไป'].replace(/,/g, ''));
+                const occupationB = parseInt(selectedData['การเกษตร'].replace(/,/g, ''));
+                const occupationC = parseInt(selectedData['ธุรกิจส่วนตัว'].replace(/,/g, ''));
+                const occupationD = parseInt(selectedData['รัฐวิสาหกิจ'].replace(/,/g, ''));
+                const occupationE = parseInt(selectedData['ข้าราชการ'].replace(/,/g, ''));
+                const occupationF = parseInt(selectedData['ค้าขาย'].replace(/,/g, ''));
+                const occupationG = parseInt(selectedData['อาชีพ อิสระ'].replace(/,/g, ''));
+                const occupationH = parseInt(selectedData['อื่น ๆ'].replace(/,/g, ''));
+                const occupationI = parseInt(selectedData['ไม่มีอาชีพ'].replace(/,/g, ''));
+
+                const occupationPercentA = ((occupationA / totalStudents) * 100).toFixed(2);
+                const occupationPercentB = ((occupationB / totalStudents) * 100).toFixed(2);
+                const occupationPercentC = ((occupationC / totalStudents) * 100).toFixed(2);
+                const occupationPercentD = ((occupationD / totalStudents) * 100).toFixed(2);
+                const occupationPercentE = ((occupationE / totalStudents) * 100).toFixed(2);
+                const occupationPercentF = ((occupationF / totalStudents) * 100).toFixed(2);
+                const occupationPercentG = ((occupationG / totalStudents) * 100).toFixed(2);
+                const occupationPercentH = ((occupationH / totalStudents) * 100).toFixed(2);
+                const occupationPercentI = ((occupationI / totalStudents) * 100).toFixed(2);
+
+                document.getElementById('occupationDataA').innerText = `${occupationA} (คน)`;
+                document.getElementById('occupationPercentA').innerText = `${occupationPercentA}%`;
+                document.getElementById('occupationDataB').innerText = `${occupationB} (คน)`;
+                document.getElementById('occupationPercentB').innerText = `${occupationPercentB}%`;
+                document.getElementById('occupationDataC').innerText = `${occupationC} (คน)`;
+                document.getElementById('occupationPercentC').innerText = `${occupationPercentC}%`;
+                document.getElementById('occupationDataD').innerText = `${occupationD} (คน)`;
+                document.getElementById('occupationPercentD').innerText = `${occupationPercentD}%`;
+                document.getElementById('occupationDataE').innerText = `${occupationE} (คน)`;
+                document.getElementById('occupationPercentE').innerText = `${occupationPercentE}%`;
+                document.getElementById('occupationDataF').innerText = `${occupationF} (คน)`;
+                document.getElementById('occupationPercentF').innerText = `${occupationPercentF}%`;
+                document.getElementById('occupationDataG').innerText = `${occupationG} (คน)`;
+                document.getElementById('occupationPercentG').innerText = `${occupationPercentG}%`;
+                document.getElementById('occupationDataH').innerText = `${occupationH} (คน)`;
+                document.getElementById('occupationPercentH').innerText = `${occupationPercentH}%`;
+                document.getElementById('occupationDataI').innerText = `${occupationI} (คน)`;
+                document.getElementById('occupationPercentI').innerText = `${occupationPercentI}%`;
+            });
+    }
+
+    function loadIncomeData(semester) {
+        fetch('https://opensheet.elk.sh/1EZtfvb0h9wYZbRFTGcm0KVPScnyu6B-boFG6aMpWEUo/รายได้เฉลี่ยรวมของครอบครัว')
+            .then(response => response.json())
+            .then(data => {
+                const selectedData = data.find(item => item['ปีการศึกษา'] === semester);
+                if (!selectedData) return;
+
+                const totalStudents = parseInt(selectedData['จำนวนข้อมูล'].replace(/,/g, ''));
+                 // อัปเดตค่าผู้ปกครองทั้งหมด
+                $('#occupationTotal').text(selectedData['จำนวนข้อมูล']);
+          
+                const incomeA = parseInt(selectedData['ต่ำกว่า 3000'].replace(/,/g, ''));
+                const incomeB = parseInt(selectedData['3000 ถึง 5000'].replace(/,/g, ''));
+                const incomeC = parseInt(selectedData['5001 ถึง 8000'].replace(/,/g, ''));
+                const incomeD = parseInt(selectedData['8001 ถึง 11000'].replace(/,/g, ''));
+                const incomeE = parseInt(selectedData['11001 ถึง 14000'].replace(/,/g, ''));
+                const incomeF = parseInt(selectedData['14001 ถึง 17000'].replace(/,/g, ''));
+                const incomeG = parseInt(selectedData['17001 ถึง 20000'].replace(/,/g, ''));
+                const incomeH = parseInt(selectedData['มากกว่า 20001 ขึ้นไป'].replace(/,/g, ''));
+
+                const incomePercentA = ((incomeA / totalStudents) * 100).toFixed(2);
+                const incomePercentB = ((incomeB / totalStudents) * 100).toFixed(2);
+                const incomePercentC = ((incomeC / totalStudents) * 100).toFixed(2);
+                const incomePercentD = ((incomeD / totalStudents) * 100).toFixed(2);
+                const incomePercentE = ((incomeE / totalStudents) * 100).toFixed(2);
+                const incomePercentF = ((incomeF / totalStudents) * 100).toFixed(2);
+                const incomePercentG = ((incomeG / totalStudents) * 100).toFixed(2);
+                const incomePercentH = ((incomeH / totalStudents) * 100).toFixed(2);
+
+                const averageIncome = parseFloat(selectedData['รายได้เฉลี่ยรวม'].replace(/,/g, '')).toFixed(2);
+                let formattedAverageIncome = new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB' }).format(averageIncome);
+
+                let averageIncomeChange = "—";
+
+                const previousData = findPreviousSemester(semester, data);
+                if (previousData) {
+                    const previousAverageIncome = parseFloat(previousData['รายได้เฉลี่ยรวม'].replace(/,/g, ''));
+                    const incomeDifference = averageIncome - previousAverageIncome;
+                    const percentageChange = ((incomeDifference / previousAverageIncome) * 100).toFixed(2);
+                    
+                    if (incomeDifference > 0) {
+                        formattedAverageIncome = `⬆️ ${formattedAverageIncome}`;
+                        averageIncomeChange = `เพิ่มขึ้น ${percentageChange}%`;
+                    } else if (incomeDifference < 0) {
+                        formattedAverageIncome = `⬇️ ${formattedAverageIncome}`;
+                        averageIncomeChange = `ลดลง ${percentageChange}%`;
+                    } else {
+                        formattedAverageIncome = `— ${formattedAverageIncome}`;
+                        averageIncomeChange = `ไม่มีการเปลี่ยนแปลง`;
+                    }
+                }
+
+                $('#incomeDataA').text(`${incomeA} (ครอบครัว)`);
+                $('#incomePercentA').text(`${incomePercentA}%`);
+                $('#incomeDataB').text(`${incomeB} (ครอบครัว)`);
+                $('#incomePercentB').text(`${incomePercentB}%`);
+                $('#incomeDataC').text(`${incomeC} (ครอบครัว)`);
+                $('#incomePercentC').text(`${incomePercentC}%`);
+                $('#incomeDataD').text(`${incomeD} (ครอบครัว)`);
+                $('#incomePercentD').text(`${incomePercentD}%`);
+                $('#incomeDataE').text(`${incomeE} (ครอบครัว)`);
+                $('#incomePercentE').text(`${incomePercentE}%`);
+                $('#incomeDataF').text(`${incomeF} (ครอบครัว)`);
+                $('#incomePercentF').text(`${incomePercentF}%`);
+                $('#incomeDataG').text(`${incomeG} (ครอบครัว)`);
+                $('#incomePercentG').text(`${incomePercentG}%`);
+                $('#incomeDataH').text(`${incomeH} (ครอบครัว)`);
+                $('#incomePercentH').text(`${incomePercentH}%`);
+                $('#averageIncomeData').text(`${formattedAverageIncome} บาท`);
+                $('#averageIncomeChange').text(averageIncomeChange);
+            });
+    }
+
+    function findPreviousSemester(currentSemester, data) {
+        const [part, year] = currentSemester.split('/');
+        const previousYear = (parseInt(year) - 1).toString();
+        return data.find(item => item['ปีการศึกษา'] === `${part}/${previousYear}`);
+    }
+
+    function shareData() {
+        const profilePicture = $('#profile-picture').attr('src');
+        const profileName = $('#profile-name').text();
+        const currentDateTime = new Date().toLocaleString('th-TH', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric',
+            weekday: 'long',
+            hour12: false
+        });
+
+        // ดึงค่าจาก DOM
+        const occupationTotal = $('#occupationTotal').text();
+        const incomeDataA = $('#incomeDataA').text();
+        const incomePercentA = $('#incomePercentA').text();
+        const incomeDataB = $('#incomeDataB').text();
+        const incomePercentB = $('#incomePercentB').text();
+        const incomeDataC = $('#incomeDataC').text();
+        const incomePercentC = $('#incomePercentC').text();
+        const incomeDataD = $('#incomeDataD').text();
+        const incomePercentD = $('#incomePercentD').text();
+        const incomeDataE = $('#incomeDataE').text();
+        const incomePercentE = $('#incomePercentE').text();
+        const incomeDataF = $('#incomeDataF').text();
+        const incomePercentF = $('#incomePercentF').text();
+        const incomeDataG = $('#incomeDataG').text();
+        const incomePercentG = $('#incomePercentG').text();
+        const incomeDataH = $('#incomeDataH').text();
+        const incomePercentH = $('#incomePercentH').text();
+        const averageIncomeData = $('#averageIncomeData').text();
+        const averageIncomeChange = $('#averageIncomeChange').text();
+
+        const flexMessage = {
+            type: "flex",
+            altText: "สารสนเทศเยี่ยมบ้านนักเรียน",
+            contents: {
+                type: "bubble",
+                size: "giga",
+                hero: {
+                    type: "image",
+                    url: "https://raw.githubusercontent.com/infobwd/STUDENT-CARE/main/headStudentCare2.png",
+                    size: "full",
+                    aspectRatio: "40:10",
+                    aspectMode: "cover"
+                },
+                body: {
+                    type: "box",
+                    layout: "vertical",
+                    contents: [
+                        {
+                            type: "separator",
+                            margin: "xl"
+                        },
+                        {
+                            type: "box",
+                            layout: "vertical",
+                            margin: "lg",
+                            spacing: "sm",
+                            contents: [
+                                {
+                                    type: "box",
+                                    layout: "baseline",
+                                    spacing: "sm",
+                                    contents: [
+                                        {
+                                            type: "text",
+                                            text: "ปีการศึกษา",
+                                            color: "#aaaaaa",
+                                            size: "sm",
+                                            flex: 5
+                                        },
+                                        {
+                                            type: "text",
+                                            text: $('#semesterDropdown').val(),
+                                            wrap: true,
+                                            color: "#666666",
+                                            size: "sm",
+                                            flex: 5
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "box",
+                                    layout: "baseline",
+                                    spacing: "sm",
+                                    contents: [
+                                        {
+                                            type: "text",
+                                            text: "ครอบครัวทั้งหมด",
+                                            color: "#aaaaaa",
+                                            size: "sm",
+                                            flex: 5
+                                        },
+                                        {
+                                            type: "text",
+                                            text: occupationTotal,
+                                            wrap: true,
+                                            color: "#666666",
+                                            size: "sm",
+                                            flex: 5
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "box",
+                                    layout: "baseline",
+                                    spacing: "sm",
+                                    contents: [
+                                        {
+                                            type: "text",
+                                            text: "ต่ำกว่า 3,000 บาท",
+                                            color: "#aaaaaa",
+                                            size: "sm",
+                                            flex: 5
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${incomeDataA} (${incomePercentA})`,
+                                            wrap: true,
+                                            color: "#666666",
+                                            size: "sm",
+                                            flex: 5
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "box",
+                                    layout: "baseline",
+                                    spacing: "sm",
+                                    contents: [
+                                        {
+                                            type: "text",
+                                            text: "3,000 ถึง 5,000 บาท",
+                                            color: "#aaaaaa",
+                                            size: "sm",
+                                            flex: 5
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${incomeDataB} (${incomePercentB})`,
+                                            wrap: true,
+                                            color: "#666666",
+                                            size: "sm",
+                                            flex: 5
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "box",
+                                    layout: "baseline",
+                                    spacing: "sm",
+                                    contents: [
+                                        {
+                                            type: "text",
+                                            text: "5,001 ถึง 8,000 บาท",
+                                            color: "#aaaaaa",
+                                            size: "sm",
+                                            flex: 5
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${incomeDataC} (${incomePercentC})`,
+                                            wrap: true,
+                                            color: "#666666",
+                                            size: "sm",
+                                            flex: 5
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "box",
+                                    layout: "baseline",
+                                    spacing: "sm",
+                                    contents: [
+                                        {
+                                            type: "text",
+                                            text: "8,001 ถึง 11,000 บาท",
+                                            color: "#aaaaaa",
+                                            size: "sm",
+                                            flex: 5
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${incomeDataD} (${incomePercentD})`,
+                                            wrap: true,
+                                            color: "#666666",
+                                            size: "sm",
+                                            flex: 5
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "box",
+                                    layout: "baseline",
+                                    spacing: "sm",
+                                    contents: [
+                                        {
+                                            type: "text",
+                                            text: "11,001 ถึง 14,000 บาท",
+                                            color: "#aaaaaa",
+                                            size: "sm",
+                                            flex: 5
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${incomeDataE} (${incomePercentE})`,
+                                            wrap: true,
+                                            color: "#666666",
+                                            size: "sm",
+                                            flex: 5
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "box",
+                                    layout: "baseline",
+                                    spacing: "sm",
+                                    contents: [
+                                        {
+                                            type: "text",
+                                            text: "14,001 ถึง 17,000 บาท",
+                                            color: "#aaaaaa",
+                                            size: "sm",
+                                            flex: 5
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${incomeDataF} (${incomePercentF})`,
+                                            wrap: true,
+                                            color: "#666666",
+                                            size: "sm",
+                                            flex: 5
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "box",
+                                    layout: "baseline",
+                                    spacing: "sm",
+                                    contents: [
+                                        {
+                                            type: "text",
+                                            text: "17,001 ถึง 20,000 บาท",
+                                            color: "#aaaaaa",
+                                            size: "sm",
+                                            flex: 5
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${incomeDataG} (${incomePercentG})`,
+                                            wrap: true,
+                                            color: "#666666",
+                                            size: "sm",
+                                            flex: 5
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "box",
+                                    layout: "baseline",
+                                    spacing: "sm",
+                                    contents: [
+                                        {
+                                            type: "text",
+                                            text: "มากกว่า 20,001 ขึ้นไป",
+                                            color: "#aaaaaa",
+                                            size: "sm",
+                                            flex: 5
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${incomeDataH} (${incomePercentH})`,
+                                            wrap: true,
+                                            color: "#666666",
+                                            size: "sm",
+                                            flex: 5
+                                        }
+                                    ]
+                                },
+                                {
+                                    type: "box",
+                                    layout: "baseline",
+                                    spacing: "sm",
+                                    contents: [
+                                        {
+                                            type: "text",
+                                            text: "รายได้เฉลี่ยรวม",
+                                            color: "#aaaaaa",
+                                            size: "sm",
+                                            flex: 5
+                                        },
+                                        {
+                                            type: "text",
+                                            text: `${averageIncomeData} (${averageIncomeChange})`,
+                                            wrap: true,
+                                            color: "#666666",
+                                            size: "sm",
+                                            flex: 5
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                footer: {
+                    type: "box",
+                    layout: "vertical",
+                    contents: [
+                        {
+                            type: "separator",
+                            margin: "sm"
+                        },
+                        {
+                            type: "image",
+                            url: profilePicture,
+                            size: "sm",
+                            aspectMode: "cover",
+                            aspectRatio: "1:1",
+                            gravity: "bottom",
+                            margin: "md"
+                        },
+                        {
+                            type: "text",
+                            text: "ข้อมูลโดย : " + profileName,
+                            weight: "bold",
+                            size: "sm",
+                            align: "center"
+                        },
+                        {
+                            type: "text",
+                            text: "ข้อมูล ณ. " + currentDateTime,
+                            size: "xs",
+                            color: "#aaaaaa",
+                            align: "center"
+                        },
+                        {
+                            type: "button",
+                            action: {
+                                type: "uri",
+                                label: "App เยี่ยมบ้าน",
+                                uri: "https://liff.line.me/2005230346-ND61qqrg"
+                            },
+                            style: "primary",
+                            color: "#1DB446",
+                            margin: "md"
+                        },
+                        {
+                            type: "button",
+                            action: {
+                                type: "uri",
+                                label: "View More",
+                                uri: "https://liff.line.me/2005494853-ZDznGqqe"
+                            },
+                            style: "primary",
+                            color: "#1DB446",
+                            margin: "md"
+                        }
+                    ],
+                    spacing: "sm",
+                    paddingTop: "10px"
+                }
+            }
+        };
+
+        liff.shareTargetPicker([flexMessage])
+            .then(() => {
+                liff.closeWindow();
+            })
+            .catch(function (error) {
+                console.error('Error sending message: ', error);
+            });
+    }
+
+    function loadNewsData() {
+        fetch('https://opensheet.elk.sh/1EZtfvb0h9wYZbRFTGcm0KVPScnyu6B-boFG6aMpWEUo/ข่าวประกาศ')
+            .then(response => response.json())
+            .then(data => {
+                let newsHtml = data.map(news => {
+                    let date = news.วันที่.replace(' +0700', ''); // ตัดข้อความ "+0000" ออก
+                    return `📰 <a href="${news.Link}" target="_blank">${news.หัวข้อข่าว}: 📆 (${date})</a>`;
+                }).join(' | ');
+                $('#newsTicker').html(newsHtml);
+            });
+    }
+
+    function showAlertIcons() {
+        $('.alert-icon').show();
+        setTimeout(function() {
+            $('.alert-icon').hide();
+        }, 20000);
+    }
+
+    function logout() {
+        liff.logout();
+        window.location.reload();
+    }
+
+    function chatFunction() {
+        window.open('https://line.me/R/ti/p/@747spikt', '_blank');
+    }
+
+    function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+            $('#fullscreenButton').text('ย่อขนาดจอ');
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+                $('#fullscreenButton').text('ขยายเต็มจอ');
+            }
+        }
+    }
+
+    function toggleFontSize() {
+        let currentSize = parseInt($('body').css('font-size'));
+        if (currentSize === 16) {
+            $('body').css('font-size', '20px');
+        } else if (currentSize === 20) {
+            $('body').css('font-size', '24px');
+        } else {
+            $('body').css('font-size', '16px');
+        }
+    }
+
+    function updateDateTime() {
+        const currentDateTime = new Date().toLocaleString('th-TH', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric',
+            weekday: 'long',
+            hour12: false
+        });
+        $('#currentDateTime').text(currentDateTime);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        populateDropdown();
+
+        document.getElementById('semesterDropdown').addEventListener('change', function() {
+            const selectedSemester = this.value;
+            loadOccupationData(selectedSemester);
+            loadIncomeData(selectedSemester);
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.navbar-nav') && !e.target.closest('#studentIdSearch')) {
+                var navbarCollapse = document.querySelector('.navbar-collapse');
+                var bsCollapse = bootstrap.Collapse.getInstance(navbarCollapse);
+                if (bsCollapse) bsCollapse.hide();
+            }
+        });
+
+        document.querySelectorAll('.dropdown-toggle').forEach(function(element) {
+            element.addEventListener('click', function(e) {
+                if (window.innerWidth < 992) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.nextElementSibling.classList.toggle('show');
+                }
+            });
+        });
+
+        document.querySelectorAll('.dropdown-item').forEach(function(element) {
+            element.addEventListener('click', function() {
+                var navbarCollapse = document.querySelector('.navbar-collapse');
+                var bsCollapse = bootstrap.Collapse.getInstance(navbarCollapse);
+                if (bsCollapse) bsCollapse.hide();
+            });
+        });
+
+        const inputField = document.getElementById('studentIdSearch');
+        inputField.addEventListener('focus', function() {
+            var navbarCollapse = document.querySelector('.navbar-collapse');
+            var bsCollapse = bootstrap.Collapse.getInstance(navbarCollapse);
+            if (bsCollapse) bsCollapse.show();
+        });
+
+        inputField.addEventListener('blur', function() {
+            setTimeout(() => {
+                if (!inputField.matches(':focus')) {
+                    var navbarCollapse = document.querySelector('.navbar-collapse');
+                    var bsCollapse = bootstrap.Collapse.getInstance(navbarCollapse);
+                    if (bsCollapse) bsCollapse.hide();
+                }
+            }, 200);
+        });
+
+        inputField.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+    });
+
+    function populateDropdown() {
+        fetch('https://opensheet.elk.sh/1EZtfvb0h9wYZbRFTGcm0KVPScnyu6B-boFG6aMpWEUo/ปีการศึกษา')
+            .then(response => response.json())
+            .then(data => {
+                const dropdown = document.getElementById('semesterDropdown');
+                data.forEach(item => {
+                    const option = document.createElement('option');
+                    option.value = item['ปีการศึกษา'];
+                    option.text = item['ปีการศึกษา'];
+                    dropdown.appendChild(option);
+                });
+
+                // Load data for the first semester by default
+                loadOccupationData(data[0]['ปีการศึกษา']);
+                loadIncomeData(data[0]['ปีการศึกษา']);
+            });
+    }
+</script>
+</body>
+</html>
